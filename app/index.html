@@ -150,6 +150,20 @@ table.h td svg{width:30px;height:30px;display:block;margin:0 auto;filter:drop-sh
 .badges{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:4px}
 .runbadge{display:inline-flex;gap:6px;align-items:center;font-size:11.5px;font-weight:700;color:var(--mute);background:#ffffff88;border-radius:999px;padding:3px 9px}
 .runbadge i{width:7px;height:7px;border-radius:50%;background:var(--ok)}
+/* images des modèles et visionneuse */
+.mimgs{padding:5px;margin-left:-16px;margin-right:-8px}
+.mimgs.g4{display:grid;grid-template-columns:1fr 1fr;gap:4px}
+.mimg{margin:0;position:relative}
+.mimg img{display:block;width:100%;height:auto;border-radius:11px;cursor:zoom-in;background:#f1eefc;min-height:120px}
+.mimg figcaption{position:absolute;left:6px;top:5px;font:800 10px Nunito;color:#2b1b6b;background:#ffffffd0;border-radius:6px;padding:1px 6px}
+.mimg .vide-txt{display:none;padding:34px 10px;text-align:center;color:var(--mute);font-size:13px}
+.mimg.vide img{display:none}.mimg.vide .vide-txt{display:block}
+.sheet img[data-zoom]{cursor:zoom-in}
+.viewer{position:fixed;inset:0;z-index:60;background:#0b0640ec;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;touch-action:none;overflow:hidden}
+.viewer img{max-width:100%;max-height:100%;transform-origin:center;user-select:none;-webkit-user-select:none;-webkit-user-drag:none;background:#fff}
+.viewer .x{position:absolute;top:calc(env(safe-area-inset-top) + 14px);right:14px;z-index:2;width:44px;height:44px;border:0;border-radius:16px;background:#ffffffe0;color:var(--ink);display:grid;place-items:center;cursor:pointer}
+.viewer .x svg{width:18px;height:18px}
+.viewer .aide{position:absolute;left:0;right:0;bottom:calc(env(safe-area-inset-bottom) + 14px);text-align:center;color:#ffffffa8;font-size:12.5px;pointer-events:none}
 /* infos */
 .ic-list,.key,.plain,.src-list{list-style:none;margin:0;padding:0}
 .ic-list li{display:grid;grid-template-columns:44px 1fr;gap:10px;align-items:center;padding:6px 0;border-bottom:1px solid var(--line)}
@@ -210,6 +224,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--violet);outline
   <main id="p-infos" class="hide"></main>
 </div>
 
+<div class="viewer hide" id="viewer" role="dialog" aria-label="Image en grand"><img alt=""><button class="x" aria-label="Fermer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button><div class="aide">Pince ou double-touche pour zoomer · glisse pour te déplacer</div></div>
 <div class="dv hide" id="detail" role="dialog" aria-label="Détail du jour"><div class="dv-in" id="dv-in"></div></div>
 <div class="picker hide" id="picker"><div class="back"></div><div class="feuille"><div class="grab"></div><h3 style="margin:0 0 8px">Choisir un mois</h3><div class="ans" id="p-ans"></div><div class="mois" id="p-mois"></div></div></div>
 
@@ -225,7 +240,6 @@ import {jours, nomJour, dateLongue, tableauHoraire, MOIS, JOURS, JOURS_L, icone}
 import {couleurT} from "./modules/echelles.js";
 import {rendreInfos} from "./modules/infos.js";
 import {decor, PAYSAGES} from "./modules/decors.js";
-import {calquePrefectures} from "./modules/prefectures.js";
 
 const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
@@ -241,7 +255,7 @@ function appliquerZoom(z, sauver = true) {
 $("#zm").onclick = () => appliquerZoom(zoom - .1); $("#zp").onclick = () => appliquerZoom(zoom + .1); $("#zr").onclick = () => appliquerZoom(1);
 let pinch = null;
 const dist = t => Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY);
-document.addEventListener("touchstart", e => { if (e.touches.length === 2) pinch = {d: dist(e.touches), z: zoom}; }, {passive: true});
+document.addEventListener("touchstart", e => { if (e.touches.length === 2 && !(window.viewerOuvert && window.viewerOuvert())) pinch = {d: dist(e.touches), z: zoom}; }, {passive: true});
 document.addEventListener("touchmove", e => { if (pinch && e.touches.length === 2) { e.preventDefault(); appliquerZoom(pinch.z * dist(e.touches) / pinch.d, false); } }, {passive: false});
 document.addEventListener("touchend", e => { if (pinch && e.touches.length < 2) { pinch = null; appliquerZoom(zoom); } });
 window.addEventListener("wheel", e => { if (e.ctrlKey) { e.preventDefault(); appliquerZoom(zoom - e.deltaY * .002); } }, {passive: false});
@@ -267,7 +281,6 @@ const IC = {
   glace: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M12 3v18M4.2 7.5l15.6 9M19.8 7.5l-15.6 9M9 4.5l3 2 3-2M9 19.5l3-2 3 2"/></svg>`,
   mers: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M2.5 9c3-3 5.500-3 9 0s6 3 9 0M2.5 15c3-3 5.500-3 9 0s6 3 9 0"/></svg>`
 };
-const feuille = (src, badge = "") => `<div class="sheet"><a href="${src}" target="_blank"><img src="${src}" alt=""></a>${badge ? `<span class="badge">${badge}</span>` : ""}</div>`;
 
 /* ---------- carte à décor ---------- */
 const heure = new Date().getHours(), NUIT = heure < 7 || heure >= 18;
@@ -278,56 +291,76 @@ function carte({icone: ic = "peu", paysage = "montagnes", nuit = false, titre, b
     <i class="barre" style="background:${d.accent}"></i></div><div class="bas">${bas}</div></article>`;
 }
 
+/* ---------- DONNÉES PUBLIÉES (GitHub Pages, branche publication) ---------- */
+const DONNEES = "https://romy-fr.github.io/MonClimat/";
+const D = {meteo: null, precip: null, france: null, temp: null, glace: null, mers: null};
+async function lireJson(chemin) {
+  try { const r = await fetch(DONNEES + chemin + "?t=" + Date.now(), {cache: "no-store"}); return r.ok ? await r.json() : null; } catch (e) { return null; }
+}
+const V = new Date().toISOString().slice(0, 10);                       /* l'image change au plus une fois par jour */
+const url = (chemin, v = V) => DONNEES + chemin + "?v=" + encodeURIComponent(v);
+const p2 = n => String(n).padStart(2, "0");
+const fmtRun = iso => { const d = new Date(iso); return `${p2(d.getUTCHours())} UTC · ${p2(d.getUTCDate())}/${p2(d.getUTCMonth() + 1)}`; };
+const fmtLocal = iso => { const d = new Date(iso); return `${p2(d.getDate())}/${p2(d.getMonth() + 1)} à ${p2(d.getHours())}:${p2(d.getMinutes())}`; };
+const signe = (v, n = 1) => (v < 0 ? "−" : "+") + Math.abs(v).toFixed(n).replace(".", ",");
+const moisFr = ym => { const [a, m] = ym.split("-"); return `${MOIS[+m - 1]} ${a}`; };
+
 /* ---------- MODÈLES ---------- */
-const MODELES = [
-  {k:"gfs",nom:"GFS",court:"GFS",type:"modèle physique",run:"00 UTC · 17/11",z:"00Z",etat:"ok",src:"NOAA / NCEP, domaine public"},
-  {k:"ifs",nom:"ECMWF IFS",court:"IFS",type:"modèle physique",run:"00 UTC · 17/11",z:"00Z",etat:"ok",src:"ECMWF Open Data, CC BY 4.0"},
-  {k:"aigfs",nom:"AIGFS",court:"AIGFS",type:"modèle IA (NOAA)",run:"12 UTC · 16/11",z:"12Z",etat:"late",src:"NOAA / NCEP, domaine public"},
-  {k:"aifs",nom:"ECMWF AIFS",court:"AIFS",type:"modèle IA",run:"00 UTC · 17/11",z:"00Z",etat:"ok",src:"ECMWF Open Data, CC BY 4.0"}];
+const META = [
+  {k:"gfs",nom:"GFS",court:"GFS",type:"modèle physique",src:"NOAA / NCEP, domaine public"},
+  {k:"ifs",nom:"ECMWF IFS",court:"IFS",type:"modèle physique",src:"ECMWF Open Data, CC BY 4.0"},
+  {k:"aigfs",nom:"AIGFS",court:"AIGFS",type:"modèle IA (NOAA)",src:"NOAA / NCEP, domaine public"},
+  {k:"aifs",nom:"ECMWF AIFS",court:"AIFS",type:"modèle IA",src:"ECMWF Open Data, CC BY 4.0"}];
+const man = () => st.type === "z" ? D.meteo : D.precip;
+const DOSSIER = () => st.type === "z" ? "meteo/cartes-j6/" : "meteo/cartes-j6/precip/";
+function infoModele(k) {
+  const meta = META.find(x => x.k === k), m = D.meteo && D.meteo.modeles && D.meteo.modeles[k];
+  if (!m || !m.run) return {...meta, run: "—", z: "--", etat: "late"};
+  return {...meta, run: fmtRun(m.run), z: p2(new Date(m.run).getUTCHours()) + "Z", etat: (m.statut !== "ok" || m.decalage_h > 0) ? "late" : "ok"};
+}
 const POS = {gfs:[0,0],ifs:[1,0],aigfs:[0,1],aifs:[1,1]};
-const PREF = calquePrefectures();
 let st = {page:"modeles",modele:"gfs",type:"z",vue:"un",h:144,top:"temp",sub:{},an:null,mois:null,j:0};
 let sgModel, sgType, sgVue;
 function legende() {
-  const m = MODELES.find(x => x.k === st.modele), g = st.vue === "grille";
-  $("#cap").innerHTML = g ? `<b>4 modèles</b> · GFS | IFS en haut, AIGFS | AIFS en bas`
+  const m = infoModele(st.modele), g = st.vue === "grille";
+  $("#cap").innerHTML = g ? `<b>4 modèles</b> · GFS | IFS en haut, AIGFS | AIFS en bas · touche une carte pour l'agrandir`
     : `<i class="${m.etat === "late" ? "late" : ""}"></i><b>${m.nom}</b> · ${m.type} · run ${m.run}${m.etat === "late" ? " · décalé" : ""}`;
   $("#sg-model").classList.toggle("tous", g);
 }
-/* Le cadre de chaque carte, mesuré dans l'image d'aperçu (612 × 669 px, 4 cartes) : x, y, largeur, hauteur.
-   Dans l'application, les chefs-lieux sont dessinés directement dans les PNG par le script de cartes. */
-const CADRES = {gfs:[10,45], ifs:[314,45], aigfs:[10,374], aifs:[314,374]}, CW = 294, CH = 253;
-function overlayPref(grille) {
-  const {W, H, svg} = PREF, un = k => `<svg x="${CADRES[k][0]}" y="${CADRES[k][1]}" width="${CW}" height="${CH}" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">${svg}</svg>`;
-  const cles = grille ? Object.keys(CADRES) : [st.modele], [qx, qy] = POS[st.modele];
-  const place = grille ? "inset:0;width:100%;height:100%" : `left:${-qx * 100}%;top:${-qy * 100}%;width:200%;height:200%`;
-  return `<div class="pref" style="${place}"><svg viewBox="0 0 612 669" width="100%" height="100%" preserveAspectRatio="none">${cles.map(un).join("")}</svg></div>`;
+function imageModele(k) {
+  const mm = man(), m = mm && mm.modeles && mm.modeles[k], f = m && m.images && m.images[String(st.h)];
+  return f ? url(DOSSIER() + f, mm.genere_le) : null;
 }
 function echeance() {
-  const d = new Date(Date.UTC(2026, 10, 17, st.h)), n = Math.floor(st.h / 24), m = MODELES.find(x => x.k === st.modele), grille = st.vue === "grille";
-  const big = $("#m-carte .big"), lab = $("#m-carte .lab");
-  big.textContent = `J+${n}${st.h % 24 ? ` +${st.h % 24} h` : ""}`;
-  lab.innerHTML = `${JOURS_L[d.getUTCDay()]} ${d.getUTCDate()} ${MOIS[d.getUTCMonth()]} · ${String(d.getUTCHours()).padStart(2, "0")} h UTC<br><span style="font-size:13px;opacity:.9">${grille ? "4 modèles" : m.nom + " · run " + m.run}</span>`;
+  const mm = man(), base = Date.parse((mm && mm.base) || (D.meteo && D.meteo.base) || "") || Date.UTC(2026, 10, 17), d = new Date(base + st.h * 3600e3);
+  const n = Math.floor(st.h / 24), m = infoModele(st.modele), grille = st.vue === "grille";
+  $("#m-carte .big").textContent = `J+${n}${st.h % 24 ? ` +${st.h % 24} h` : ""}`;
+  $("#m-carte .lab").innerHTML = `${JOURS_L[d.getUTCDay()]} ${d.getUTCDate()} ${MOIS[d.getUTCMonth()]} · ${p2(d.getUTCHours())} h UTC<br><span style="font-size:13px;opacity:.9">${grille ? "4 modèles" : m.nom + " · run " + m.run}</span>`;
+}
+function majImages() {
+  $$("#m-carte img[data-k]").forEach(im => { const u = imageModele(im.dataset.k), f = im.closest("figure");
+    if (u) { f.classList.remove("vide"); if (im.getAttribute("src") !== u) im.src = u; } else { f.classList.add("vide"); im.removeAttribute("src"); } });
 }
 function dessinerModeles() {
-  const m = MODELES.find(x => x.k === st.modele), z = st.type === "z", grille = st.vue === "grille";
-  const img = z ? "./img/modeles_z500.webp" : "./img/modeles_precip.png", ar = z ? 648 / 565 : 612 / 669;
+  const z = st.type === "z", grille = st.vue === "grille", mm = man();
+  const off = (mm && mm.offsets) || [0, 6, 12, 18, 24, 30, 36, 42, 48, 54, 60, 66, 72, 78, 84, 90, 96, 102, 108, 114, 120, 126, 132, 138, 144];
+  st.h = off.reduce((a, b) => Math.abs(b - st.h) < Math.abs(a - st.h) ? b : a);
   legende();
-  let calque = "";
-  if (!z) {                                  /* chefs-lieux sur les cartes de précipitations */
-    calque = overlayPref(grille);
-  }
-  const bg = grille ? "background-size:100% 100%;background-position:0 0" : `background-size:200% 200%;background-position:${POS[st.modele][0] * 100}% ${POS[st.modele][1] * 100}%`;
-  const bas = `<div class="sheet" style="padding:5px"><div class="map" style="background-image:url(${img});${bg};aspect-ratio:${ar}">${calque}</div></div>
-    <input class="range" id="rng" type="range" min="0" max="144" step="6" value="${st.h}" aria-label="Échéance">
+  const ks = grille ? META.map(x => x.k) : [st.modele];
+  const figs = ks.map(k => `<figure class="mimg"><img data-zoom data-k="${k}" alt="${infoModele(k).nom}" decoding="async">${grille ? `<figcaption>${infoModele(k).nom}</figcaption>` : ""}<span class="vide-txt">Carte indisponible pour ce modèle</span></figure>`).join("");
+  const m = infoModele(st.modele);
+  const bas = `<div class="sheet mimgs ${grille ? "g4" : ""}">${figs}</div>
+    <input class="range" id="rng" type="range" min="${off[0]}" max="${off[off.length - 1]}" step="${(mm && mm.pas_h) || 6}" value="${st.h}" aria-label="Échéance">
     <div class="ticks"><span>J+0</span><span>J+1</span><span>J+2</span><span>J+3</span><span>J+4</span><span>J+5</span><span>J+6</span></div>
-    <p class="src">${grille ? "Données : NOAA, ECMWF" : "Données : " + m.src} · cartes reconstruites à partir des données brutes${z ? "" : " · chefs-lieux de France"}</p>`;
+    <p class="src">${grille ? "Données : NOAA, ECMWF" : "Données : " + m.src} · cartes reconstruites à partir des données brutes${z ? "" : " · chefs-lieux de France"}${mm ? "" : " · données indisponibles (connexion ?)"}</p>`;
   $("#m-carte").innerHTML = carte({icone: "ensoleille", paysage: "montagnes", titre: z ? "Z500 et pression" : "Précipitations 6 h et type", big: "", bigTxt: true, bas});
-  echeance();
-  $("#rng").oninput = e => { st.h = +e.target.value; echeance(); };
+  echeance(); majImages();
+  $("#rng").oninput = e => { st.h = +e.target.value; echeance(); majImages(); };
 }
-sgModel = segment($("#sg-model"), MODELES.map(x => ({k: x.k, label: x.nom, html: `<b>${x.court}</b><small><i class="${x.etat === "late" ? "late" : ""}"></i>${x.z}</small>`})), st.modele,
-  k => { st.modele = k; if (st.vue === "grille") { st.vue = "un"; sgVue.set("un"); } dessinerModeles(); });
+function menuModeles() {
+  sgModel = segment($("#sg-model"), META.map(x => { const i = infoModele(x.k); return {k: x.k, label: x.nom, html: `<b>${x.court}</b><small><i class="${i.etat === "late" ? "late" : ""}"></i>${i.z}</small>`}; }), st.modele,
+    k => { st.modele = k; if (st.vue === "grille") { st.vue = "un"; sgVue.set("un"); } dessinerModeles(); });
+}
 sgType = segment($("#sg-type"), [{k:"z", label:"Z500 et pression", html:`${IC.z}Z500`}, {k:"p", label:"Précipitations", html:`${IC.p}Précipitations`}], st.type, k => { st.type = k; dessinerModeles(); }, "row");
 sgVue = segment($("#sg-vue"), [{k:"un", label:"Un modèle", html:IC.un}, {k:"grille", label:"Les 4 en grille", html:IC.grille}], st.vue, k => { st.vue = k; dessinerModeles(); });
 
@@ -408,24 +441,32 @@ function dessinerMeteo() {
 $("#ville").onchange = dessinerMeteo;
 
 /* ---------- CLIMAT ---------- */
-const I = "./img/";
+const CL = "climat/";
+const deg = (v, n = 1) => signe(v, n) + "°";
+const feuille = (chemin) => `<div class="sheet"><img data-zoom src="${url(CL + chemin)}" alt="" decoding="async" onerror="this.closest('.sheet').classList.add('todo');this.replaceWith(document.createTextNode('Graphique indisponible pour le moment'))"></div>`;
 const CLIMAT = {
   temp:{nom:"Température",deco:{icone:"eclaircies",paysage:"montagnes"},sub:{
-    monde:{nom:"Monde",big:"+1,40°",lab:"Monde · moyenne sur 12 mois<br>écart à 1850-1900, juillet 2026",note:"Température mondiale mensuelle depuis 1850, écart à 1850-1900 (gauche) et à 1991-2020 (droite).",img:["temperature_mensuelle.png","temperature_terre_mer.png"]},
-    france:{nom:"France",big:"France",txt:1,lab:"Température moyenne depuis 1958",note:"Météo-France (SIM), comparée à la normale 1991-2020.",img:["france_temperature_mensuelle.png"]}}},
+    monde:{nom:"Monde",note:"Température mondiale mensuelle depuis 1850, écart à 1850-1900 (gauche) et à 1991-2020 (droite), puis moyenne annuelle terres et mers.",img:["temperature/temperature_mensuelle.png","temperature/temperature_terre_mer_monde.png"],
+      hero:() => D.temp && D.temp.dernier ? {big: deg(D.temp.dernier.ecart, 2), lab: `Monde · écart à ${D.temp.reference}<br>${moisFr(D.temp.dernier.mois)}`} : null},
+    france:{nom:"France",big:"France",lab:"Température moyenne depuis 1958",note:"Météo-France (SIM), comparée à la normale 1991-2020.",img:["france/france_temperature_mensuelle.png"],
+      hero:() => D.france && D.france.serie && D.france.serie.dernier ? {big: deg(D.france.serie.dernier.ecart), lab: `France · écart à la normale ${D.france.normale}<br>${moisFr(D.france.serie.dernier.mois)}`} : null}}},
   cartes:{nom:"France",deco:{icone:"peu",paysage:"collines"},cartes:true,note:"Écart à la normale 1991-2020, Météo-France (SIM), grille 8 km."},
   glace:{nom:"Banquise",deco:{icone:"neige",paysage:"montagnes"},sub:{
-    arctique:{nom:"Arctique",big:"Arctique",txt:1,lab:"Étendue de la banquise",note:"En haut : l'année au jour le jour. En bas : l'écart mensuel à 1981-2010 depuis 1978.",img:["banquise_annuelle_arctique.png","banquise_arctique.png"]},
-    antarctique:{nom:"Antarctique",big:"Antarctique",txt:1,lab:"Étendue de la banquise",note:"En haut : l'année au jour le jour. En bas : l'écart mensuel à 1981-2010 depuis 1978.",img:["banquise_annuelle_antarctique.png","banquise_antarctique.png"]},
-    global:{nom:"Global",big:"Global",txt:1,lab:"Étendue de la banquise",note:"Somme des deux pôles.",img:[null]}}},
+    arctique:{nom:"Arctique",big:"Arctique",lab:"Étendue de la banquise",note:"En haut : l'année au jour le jour. En bas : l'écart mensuel à 1981-2010 depuis 1978.",img:["banquise/banquise_annuelle_arctique.png","banquise/banquise_arctique.png"],
+      hero:() => D.glace && D.glace.north && D.glace.north.dernier ? {big: signe(D.glace.north.dernier.ecart, 1) + " M km²", lab: `Arctique · écart à ${D.glace.reference}<br>${moisFr(D.glace.north.dernier.mois)} (${D.glace.north.dernier.jours} jours)`} : null},
+    antarctique:{nom:"Antarctique",big:"Antarctique",lab:"Étendue de la banquise",note:"En haut : l'année au jour le jour. En bas : l'écart mensuel à 1981-2010 depuis 1978.",img:["banquise/banquise_annuelle_antarctique.png","banquise/banquise_antarctique.png"],
+      hero:() => D.glace && D.glace.south && D.glace.south.dernier ? {big: signe(D.glace.south.dernier.ecart, 1) + " M km²", lab: `Antarctique · écart à ${D.glace.reference}<br>${moisFr(D.glace.south.dernier.mois)} (${D.glace.south.dernier.jours} jours)`} : null},
+    global:{nom:"Global",big:"Global",lab:"Étendue de la banquise",note:"Somme des deux pôles.",img:[null]}}},
   mers:{nom:"Mers",deco:{icone:"peu",paysage:"mer"},sub:{
-    monde:{nom:"Global",big:"Océans",txt:1,lab:"Température de surface, monde",note:"Écart mensuel à la normale 1991-2020 depuis 1880.",img:["sst_monde.png"]},
-    nino12:{nom:"Niño 1+2",big:"Niño 1+2",txt:1,lab:"Température de surface",note:"Zone côtière du Pacifique est.",img:["sst_nino12.png"]},
-    nino34:{nom:"Niño 3.4",big:"Niño 3.4",txt:1,lab:"Température de surface",note:"Zone de référence de l'ENSO.",img:["sst_nino34.png"]},
-    med:{nom:"Méditerranée",big:"Méditerranée",txt:1,lab:"Température de surface",note:"Écart mensuel à la normale 1991-2020.",img:["sst_med.png"]}}}
+    monde:{nom:"Global",big:"Océans",lab:"Température de surface, monde",note:"Écart mensuel à la normale 1991-2020 depuis 1880.",img:["mers/sst_monde.png"],cle:"monde"},
+    nino12:{nom:"Niño 1+2",big:"Niño 1+2",lab:"Température de surface",note:"Zone côtière du Pacifique est.",img:["mers/sst_nino12.png"],cle:"nino12"},
+    nino34:{nom:"Niño 3.4",big:"Niño 3.4",lab:"Température de surface",note:"Zone de référence de l'ENSO.",img:["mers/sst_nino34.png"],cle:"nino34"},
+    med:{nom:"Méditerranée",big:"Méditerranée",lab:"Température de surface",note:"Écart mensuel à la normale 1991-2020.",img:["mers/sst_med.png"],cle:"med"}}}
 };
-/* dernier mois disponible = mois précédent (décembre de l'année d'avant si on est en janvier) */
-const NOW = new Date(), DERN = NOW.getMonth() === 0 ? {a: NOW.getFullYear() - 1, m: 12} : {a: NOW.getFullYear(), m: NOW.getMonth()}, AN0 = 1959;
+/* dernier mois disponible : celui des cartes publiées, sinon le mois précédent (décembre de l'année d'avant si on est en janvier) */
+const NOW = new Date();
+let DERN = NOW.getMonth() === 0 ? {a: NOW.getFullYear() - 1, m: 12} : {a: NOW.getFullYear(), m: NOW.getMonth()};
+const AN0 = 1959;
 const apres = (a, m) => a > DERN.a || (a === DERN.a && m > DERN.m);
 let sgTop, sgSub, sgSubDe = null;
 function dessinerClimat() {
@@ -435,16 +476,23 @@ function dessinerClimat() {
     if (st.an === null) { st.an = DERN.a; st.mois = DERN.m; }
     $("#mcur").innerHTML = `${MOIS[st.mois - 1]} <span>${st.an}</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>`;
     $("#mprev").disabled = st.an === AN0 && st.mois === 1; $("#mnext").disabled = st.an === DERN.a && st.mois === DERN.m;
-    const reel = st.an === 2026 && st.mois === 10;
-    $("#c-carte").innerHTML = carte({...o.deco, titre: "France", big: "+0,9°", lab: `${MOIS[st.mois - 1]} ${st.an}<br><span style="font-size:13px;opacity:.9">écart à la normale 1991-2020${reel ? "" : " (valeur d'exemple)"}</span>`,
-      bas: `<p class="note">${o.note}</p>` + ["temperature", "precipitations"].map(x => feuille(`${I}france_carte_${x}_2026-10.png`, reel ? "" : "aperçu : octobre 2026")).join("")});
+    const publie = D.france && D.france.carte && D.france.carte.mois === `${st.an}-${p2(st.mois)}`;
+    if (publie) {
+      $("#c-carte").innerHTML = carte({...o.deco, titre: "France", big: deg(D.france.carte.ecart_t_france), lab: `${MOIS[st.mois - 1]} ${st.an}<br><span style="font-size:13px;opacity:.9">écart à la normale 1991-2020</span>`,
+        bas: `<p class="note">${o.note}</p>` + ["temperature", "precipitations"].map(x => feuille(`france/france_carte_${x}.png`)).join("")});
+    } else {
+      $("#c-carte").innerHTML = carte({...o.deco, titre: "France", big: "—", bigTxt: true, lab: `${MOIS[st.mois - 1]} ${st.an}`,
+        bas: `<div class="sheet todo">Les cartes de ${MOIS[st.mois - 1]} ${st.an} ne sont pas encore produites.<br>L'historique mois par mois est en préparation.</div>`});
+    }
     return;
   }
   const subs = Object.entries(o.sub), c = o.sub[st.sub[st.top]] ? st.sub[st.top] : subs[0][0], s = o.sub[c];
   if (sgSubDe !== st.top) { sgSubDe = st.top; sgSub = segment($("#sg-sub"), subs.map(([k, x]) => ({k, label: x.nom, html: x.nom})), c, k => { st.sub[st.top] = k; dessinerClimat(); }, "under"); }
   else sgSub.set(c);
-  $("#c-carte").innerHTML = carte({...o.deco, titre: o.nom, big: s.big, bigTxt: !!s.txt, lab: s.lab,
-    bas: `<p class="note">${s.note}</p>` + s.img.map(p => p ? feuille(I + p) : `<div class="sheet todo">Graphique à produire :<br>étendue de glace mondiale (Arctique + Antarctique)</div>`).join("")});
+  let h = s.hero ? s.hero() : null;
+  if (!h && s.cle && D.mers && D.mers[s.cle] && D.mers[s.cle].dernier) { const d = D.mers[s.cle].dernier; h = {big: deg(d.ecart, 2), lab: `${s.nom} · écart à ${D.mers.reference}<br>${moisFr(d.mois)}`}; }
+  $("#c-carte").innerHTML = carte({...o.deco, titre: o.nom, big: h ? h.big : s.big, bigTxt: !h, lab: h ? h.lab : s.lab,
+    bas: `<p class="note">${s.note}</p>` + s.img.map(p => p ? feuille(p) : `<div class="sheet todo">Graphique à produire :<br>étendue de glace mondiale (Arctique + Antarctique)</div>`).join("")});
 }
 sgTop = segment($("#sg-top"), Object.entries(CLIMAT).map(([k, o]) => ({k, label: o.nom, html: `${IC[k]}<span>${o.nom}</span>`})), st.top, k => { st.top = k; dessinerClimat(); });
 $("#mprev").onclick = () => { if (st.mois > 1) st.mois--; else { st.an--; st.mois = 12; } dessinerClimat(); };
@@ -465,17 +513,50 @@ function ouvrirChoix() {
 }
 $("#mcur").onclick = ouvrirChoix; $("#picker .back").onclick = () => $("#picker").classList.add("hide");
 
+/* ---------- VISIONNEUSE : toucher une image l'ouvre en plein écran ; pincer, double-toucher ou molette pour zoomer, glisser pour se déplacer ---------- */
+{ const v = $("#viewer"), im = $("#viewer img"); let s = 1, x = 0, y = 0, d0 = 0, s0 = 1, dernierTap = 0; const pts = new Map();
+  const maj = () => { im.style.transform = `translate(${x}px,${y}px) scale(${s})`; };
+  const borne = () => { s = clamp(s, 1, 6); if (s === 1) x = y = 0; maj(); };
+  const ouvert = () => !v.classList.contains("hide");
+  const fermer = () => { v.classList.add("hide"); im.removeAttribute("src"); document.body.style.overflow = ""; pts.clear(); };
+  window.viewerOuvert = ouvert;
+  document.addEventListener("click", e => { const i = e.target.closest("img[data-zoom]"); if (i && !ouvert() && i.getAttribute("src")) { s = 1; x = y = 0; maj(); im.src = i.currentSrc || i.src; v.classList.remove("hide"); document.body.style.overflow = "hidden"; } });
+  $("#viewer .x").onclick = fermer;
+  window.addEventListener("keydown", e => { if (e.key === "Escape" && ouvert()) fermer(); });
+  v.addEventListener("wheel", e => { e.preventDefault(); s *= e.deltaY < 0 ? 1.15 : 1 / 1.15; borne(); }, {passive: false});
+  v.addEventListener("pointerdown", e => { if (e.target.closest(".x")) return; pts.set(e.pointerId, {x: e.clientX, y: e.clientY});
+    if (pts.size === 2) { const [a, b] = [...pts.values()]; d0 = Math.hypot(a.x - b.x, a.y - b.y); s0 = s; }
+    const t = Date.now(); if (pts.size === 1 && t - dernierTap < 300) { s = s > 1 ? 1 : 2.5; borne(); } dernierTap = t; });
+  v.addEventListener("pointermove", e => { const p = pts.get(e.pointerId); if (!p) return;
+    if (pts.size === 2) { pts.set(e.pointerId, {x: e.clientX, y: e.clientY}); const [a, b] = [...pts.values()]; s = s0 * Math.hypot(a.x - b.x, a.y - b.y) / d0; borne(); }
+    else { if (s > 1) { x += e.clientX - p.x; y += e.clientY - p.y; maj(); } pts.set(e.pointerId, {x: e.clientX, y: e.clientY}); } });
+  const fin = e => pts.delete(e.pointerId); v.addEventListener("pointerup", fin); v.addEventListener("pointercancel", fin);
+}
+
 /* ---------- NAVIGATION ---------- */
-const TITRES = {modeles:["Modèles météo","Cartes à J+6 · mises à jour dès que chaque run est publié"],meteo:["Météo","Glisse de gauche à droite : J+0 → J+6"],
-  climat:["Climat","Graphiques mis à jour à minuit"],infos:["Infos","Icônes, couleurs, sources et mises à jour"]};
+function sousTitre() {
+  const a = D.meteo && D.meteo.genere_le, b = D.precip && D.precip.genere_le;
+  return {modeles: a ? `Run ${fmtRun(D.meteo.base)} · mis à jour le ${fmtLocal(b && b > a ? b : a)}` : "Cartes à J+6 · données en cours de chargement",
+    meteo: "Prévisions d'exemple · AROME et ECMWF IFS bientôt",
+    climat: "Banquise chaque jour, autres graphiques chaque mois",
+    infos: "Icônes, couleurs, sources et mises à jour"};
+}
+const TITRES = {modeles: "Modèles météo", meteo: "Météo", climat: "Climat", infos: "Infos"};
 function page() {
   ["modeles", "meteo", "climat", "infos"].forEach(p => $("#p-" + p).classList.toggle("hide", p !== st.page));
   $$("nav button").forEach(b => b.classList.toggle("on", b.dataset.p === st.page));
-  $("#titre").textContent = TITRES[st.page][0]; $("#maj").textContent = TITRES[st.page][1];
+  $("#titre").textContent = TITRES[st.page]; $("#maj").textContent = sousTitre()[st.page];
   if (st.page === "meteo") dessinerMeteo();   /* recalcule la position du carrousel une fois la page visible */
 }
 $$("nav button").forEach(b => b.onclick = () => { st.page = b.dataset.p; page(); scrollTo(0, 0); });
-rendreInfos($("#p-infos")); dessinerModeles(); dessinerClimat(); page();
+async function chargerTout() {
+  const [meteo, precip, france, temp, glace, mers] = await Promise.all(["meteo/cartes-j6/manifest.json", "meteo/cartes-j6/precip/manifest.json", "climat/france/france.json",
+    "climat/temperature/temperature_mensuelle.json", "climat/banquise/banquise.json", "climat/mers/sst_zones.json"].map(lireJson));
+  Object.assign(D, {meteo, precip, france, temp, glace, mers});
+  if (france && france.carte && france.carte.mois) { const [a, m] = france.carte.mois.split("-").map(Number); DERN = {a, m}; st.an = null; }
+  menuModeles(); dessinerModeles(); dessinerClimat(); page();
+}
+rendreInfos($("#p-infos")); menuModeles(); dessinerModeles(); dessinerClimat(); page(); chargerTout();
 </script>
 </body>
 </html>

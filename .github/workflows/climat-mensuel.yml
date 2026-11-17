@@ -80,11 +80,3 @@ jobs:
           git add -A
           git commit -q -m "Climat – mise à jour du $(date -u +%F)"
           git push -q -f "$REPO_URL" maj:publication
-
-      - name: Notification sur l'iPhone (ntfy)
-        if: always()
-        continue-on-error: true
-        env:
-          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
-          SORTIE: sortie
-        run: python3 scripts/notifier.py climat "${{ job.status }}"

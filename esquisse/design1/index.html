@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>MonClimat · esquisse 1</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,800;9..144,900&family=Nunito:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* Esquisse 1 : aplats plats (voilier, cygne, nuit violette). Trois ciels : jour (bleu), couchant (orange), nuit (violet).
+   Chaque carte = un ciel plat avec son décor, puis un panneau clair en dessous : les graphiques à fond blanc s'y posent naturellement.
+   Fond prune pour faire ressortir les cartes, couleurs tirées de la palette des graphiques (violet #2b1b6b, bleu #2184d9, jaune #ddd84f, orange #f08a2c, rouge #9c1c2c). */
+:root{color-scheme:dark;
+  --bg:#3a1e55;--bg2:#2b1b6b;--ink:#f6efff;--mute:#c9b9e8;--dark:#2b1b4a;--soft:#7b6f95;--panel:#eef1fa;
+  --orange:#f08a2c;--yellow:#f2b52e;--blue:#2184d9;--red:#e0452a;--ok:#3ac47d;--late:#f08a2c}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:linear-gradient(180deg,var(--bg2),var(--bg) 320px);background-attachment:fixed;color:var(--ink);
+  font:15px/1.45 Nunito,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased;min-height:100vh}
+.app{max-width:480px;margin:0 auto;padding:calc(env(safe-area-inset-top) + 16px) 14px 112px}
+h1,h2,h3{font-family:Fraunces,Georgia,serif;margin:0;line-height:1.12}
+h1{font-size:32px;font-weight:900;color:#ffcf66}
+.sub{color:var(--mute);font-size:13.5px;margin:3px 0 14px}
+.hide{display:none!important}
+/* segments et puces : aplats */
+.seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:6px;margin-bottom:12px}
+.seg button{border:0;background:#ffffff1c;color:var(--ink);font:700 14px Nunito;padding:11px 4px;border-radius:999px;cursor:pointer}
+.seg button.on{background:var(--orange);color:#fff}
+.chips{display:flex;gap:6px;overflow-x:auto;margin:0 -14px 12px;padding:0 14px;scrollbar-width:none}
+.chips button{flex:0 0 auto;border:0;background:#ffffff1c;color:var(--ink);font:700 14px Nunito;padding:9px 16px;border-radius:999px;cursor:pointer}
+.chips button.on{background:var(--orange);color:#fff}
+.chips.sm button{font-size:13px;padding:7px 14px}
+.chips.sm button.on{background:#fff;color:var(--bg2)}
+.models{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.model{background:#fff;border:0;border-radius:18px;padding:10px 12px;text-align:left;cursor:pointer;color:var(--dark);font:inherit;box-shadow:0 4px 0 #0003}
+.model.on{background:var(--orange);color:#fff}
+.model b{display:flex;align-items:center;gap:6px;font-weight:800}
+.model i{width:9px;height:9px;border-radius:50%;background:var(--ok);flex:0 0 auto}.model i.late{background:var(--late);box-shadow:0 0 0 2px #fff6}
+.model small{display:block;color:var(--soft);font-size:12.5px;margin-top:2px}.model.on small{color:#fff}
+.tag{font-size:10px;font-weight:800;background:#0001;border-radius:999px;padding:1px 7px;margin-left:auto}
+/* carte plate : ciel + panneau */
+.flat{border-radius:28px;overflow:hidden;margin-bottom:14px;box-shadow:0 14px 28px #0005;background:var(--panel);color:var(--dark)}
+.sky{position:relative;text-align:center;color:#fff;padding:18px 16px 0;height:226px;overflow:hidden}
+.jour .sky{background:linear-gradient(180deg,#4fb9ef,#a9e3fa)}
+.couchant .sky{background:linear-gradient(180deg,#ef7f66,#f6a867 60%,#fbd08a)}
+.nuit .sky{background:linear-gradient(180deg,#3a1d8c,#6a3fc0)}
+.flat:not(.mc) .sky{height:262px}
+.sky svg.scene{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.sky>*:not(.scene){position:relative}
+.top{display:flex;justify-content:space-between;font-size:12.5px;font-weight:700;opacity:.92}
+.big{font:300 82px/1 Nunito;margin-top:14px;letter-spacing:-2px}
+.big.txt{font:900 42px/1.05 Fraunces,serif;letter-spacing:0;margin-top:26px}
+.lab{font-size:17px;margin-top:6px;font-weight:600}
+.low{padding:14px;color:var(--dark)}
+.low .note{color:var(--soft);font-size:13.5px;margin:0 2px 12px;text-align:center}
+.sheet{background:#fff;border-radius:16px;padding:6px;margin-bottom:12px;position:relative;overflow:hidden;box-shadow:0 2px 0 #2b1b6b14}
+.sheet img{display:block;width:100%;height:auto;border-radius:11px}
+.sheet .badge{position:absolute;top:12px;right:12px;font-size:11px;background:#2b1b6bdd;color:#fff;border-radius:999px;padding:3px 9px}
+.sheet.todo{background:#fff;border:2px dashed #c9bfe6;box-shadow:none;padding:30px 16px;text-align:center;color:var(--soft);font-size:14px}
+.map{width:100%;border-radius:12px;background-repeat:no-repeat;background-color:#fff}
+.range{width:100%;accent-color:var(--orange);margin:6px 0 2px}
+.ticks{display:flex;justify-content:space-between;font-size:11.5px;color:var(--soft);font-weight:700}
+.src{color:var(--soft);font-size:12px;margin:10px 2px 0}
+.sel{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+select{font:800 15px Nunito;padding:11px 14px;border:0;border-radius:999px;background:#fff;color:var(--dark);width:100%;box-shadow:0 3px 0 #0003}
+/* météo : carrousel */
+.field{display:flex;gap:8px;margin-bottom:8px}
+.field input{flex:1;font:700 16px Nunito;padding:12px 16px;border:0;border-radius:999px;background:#fff;color:var(--dark)}
+.btn{border:0;font:800 15px Nunito;color:#fff;padding:12px 20px;border-radius:999px;cursor:pointer;background:var(--orange)}
+.btn.ghost{background:#ffffff1c}
+.runs{display:flex;gap:10px;font-size:11px;color:var(--mute);margin:10px 2px 8px;white-space:nowrap}
+.mc .rowj .tt small{white-space:nowrap}
+.mc .rowj b{font-size:14px}
+.runs i{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--ok);margin-right:5px}
+.pager{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;margin:0 -14px;padding:4px 14px 12px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.pager::-webkit-scrollbar{display:none}
+.mc{flex:0 0 86%;scroll-snap-align:center;height:clamp(440px,calc(100dvh - 330px),620px);display:flex;flex-direction:column;margin:0}
+.mc .sky{flex:0 0 auto}
+.mc .low{flex:1;overflow-y:auto;padding:12px 12px 16px;overscroll-behavior:contain}
+.mc .rowj{display:flex;align-items:center;justify-content:space-between;margin:0 4px 10px}
+.mc .rowj b{display:block;font-size:15px}.mc .rowj small{color:var(--soft);font-size:12.5px}
+.mc .rowj svg{width:40px;height:40px;display:block}
+.mc .rowj .tt{display:flex;align-items:center;gap:8px;text-align:right;font-weight:800;font-size:16px}
+.mc .rowj .tt small{display:block;font-weight:600}
+table.h{width:100%;border-collapse:separate;border-spacing:0;background:#fff;border-radius:16px;font-size:13px;text-align:center;overflow:hidden}
+table.h th{color:var(--soft);font-weight:700;font-size:11px;padding:8px 2px 6px;border-bottom:2px solid var(--panel);line-height:1.15}
+table.h th small{display:block;font-weight:600;font-size:10px}
+table.h td{padding:2px;border-bottom:1px solid var(--panel);font-variant-numeric:tabular-nums}
+table.h td:first-child{color:var(--soft);text-align:left;padding-left:10px;font-weight:700}
+table.h td svg{width:30px;height:30px;display:block;margin:0 auto}
+table.h tr:last-child td{border-bottom:0}
+.mm{display:inline-block;min-width:34px;padding:2px 6px;border-radius:8px;font-weight:800;font-size:12px}
+.t{font-weight:800}
+.dots{display:flex;justify-content:center;gap:6px;margin-top:2px}
+.dots button{border:0;background:#ffffff1c;color:var(--mute);font:800 11.5px Nunito;padding:6px 9px;border-radius:999px;cursor:pointer}
+.dots button.on{background:var(--orange);color:#fff}
+/* infos (rendues par modules/infos.js) */
+#p-infos .card{background:#fff;color:var(--dark);border-radius:26px;padding:16px;margin-bottom:14px;box-shadow:0 10px 24px #0004}
+#p-infos h2{font-size:23px;font-weight:900;color:var(--bg2)}
+#p-infos h3{font-size:14.5px;font-weight:800;color:var(--dark);margin:14px 0 6px}
+#p-infos .sub{color:var(--soft);margin:3px 0 8px}
+.ic-list,.key,.plain,.src-list{list-style:none;margin:0;padding:0}
+.ic-list li{display:grid;grid-template-columns:44px 1fr;gap:10px;align-items:center;padding:7px 0;border-bottom:1px solid var(--panel)}
+.ic-list .ic{background:var(--panel);border-radius:12px;padding:1px}
+.ic-list .ic svg{width:42px;height:42px;display:block}
+.ic-list b{font-weight:800}.ic-list small{display:block;color:var(--soft);font-size:12.5px;line-height:1.35}
+.key{display:grid;grid-template-columns:1fr 1fr;gap:6px 10px;font-size:13.5px}
+.key li{display:flex;align-items:center;gap:8px}.key i{width:22px;height:14px;border-radius:5px;flex:0 0 auto}
+.plain li{padding:7px 0;border-bottom:1px solid var(--panel);font-size:14px}
+.src-list li{padding:8px 0;border-bottom:1px solid var(--panel);font-size:13.5px}
+.src-list b{display:block;font-weight:800}.src-list small{display:block;color:var(--soft);font-size:12px}
+#p-infos .src{color:var(--soft)}
+/* barre d'onglets : pilule blanche */
+nav{position:fixed;left:0;right:0;bottom:calc(env(safe-area-inset-bottom) + 14px);display:flex;justify-content:center;pointer-events:none}
+nav div{pointer-events:auto;width:min(94%,450px);background:#fff;border-radius:32px;padding:6px;display:grid;grid-template-columns:repeat(4,1fr);gap:3px;box-shadow:0 10px 26px #0006}
+nav button{border:0;background:none;color:var(--soft);font:800 11px Nunito;display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 0;border-radius:26px;cursor:pointer}
+nav button svg{width:25px;height:25px}
+nav button.on{color:#fff;background:var(--orange)}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #ffcf66;outline-offset:2px}
+</style>
+</head>
+<body>
+<div class="app">
+  <header><h1 id="titre"></h1><p class="sub" id="maj"></p></header>
+
+  <main id="p-modeles">
+    <div class="models" id="models"></div>
+    <div class="seg" id="seg-type"><button class="on" data-t="z">Z500 et pression</button><button data-t="p">Précipitations</button></div>
+    <div id="m-card"></div>
+    <div class="seg" id="seg-vue"><button class="on" data-v="un">Un modèle</button><button data-v="grille">Les 4 en grille</button></div>
+  </main>
+
+  <main id="p-meteo" class="hide">
+    <div class="field"><input id="ville" value="Nanterre" aria-label="Lieu"><button class="btn">Chercher</button></div>
+    <button class="btn ghost" style="width:100%">📍 Ma position</button>
+    <div class="runs"><span><i></i>AROME · run 12 UTC · 17/11</span><span><i></i>ECMWF IFS · run 00 UTC · 17/11</span></div>
+    <div class="pager" id="pager"></div>
+    <div class="dots" id="dots"></div>
+  </main>
+
+  <main id="p-climat" class="hide">
+    <div class="chips" id="c-top"></div>
+    <div class="chips sm" id="c-sub"></div>
+    <div class="sel hide" id="c-sel"><select id="s-an" aria-label="Année"></select><select id="s-mois" aria-label="Mois"></select></div>
+    <div id="c-card"></div>
+    <p class="sub" style="text-align:center">Graphiques recalculés chaque nuit à minuit · touche une image pour l'agrandir</p>
+  </main>
+
+  <main id="p-infos" class="hide"></main>
+</div>
+
+<nav><div>
+  <button data-p="modeles"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="7" height="7" rx="2"/><rect x="13.5" y="3.5" width="7" height="7" rx="2"/><rect x="3.5" y="13.5" width="7" height="7" rx="2"/><rect x="13.5" y="13.5" width="7" height="7" rx="2"/></svg>Modèles</button>
+  <button data-p="meteo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 19a4 4 0 1 1 .9-7.9A5.5 5.5 0 0 1 18.5 12 3.5 3.5 0 0 1 18 19z"/><path d="M9.5 5.5l.7-1.6M5.2 7.2L3.8 6M13.5 4.2l.6-1.7"/></svg>Météo</button>
+  <button data-p="climat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l5-5 4 4 8-9"/><path d="M15 7h5v5"/></svg>Climat</button>
+  <button data-p="infos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 7.8v.2"/></svg>Infos</button>
+</div></nav>
+
+<script type="module">
+import {jours, nomJour, dateLongue, tableauHoraire, MOIS, JOURS_L, icone, ICONES, couleurT} from "../modules/previsions.js";
+import {rendreInfos} from "../modules/infos.js";
+
+const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
+
+/* ---------- décors plats (viewBox 300×226, collé en bas du ciel) ---------- */
+const NUAGE = (x,y,s,c="#fff",o=1) => `<path transform="translate(${x} ${y}) scale(${s})" d="M0 22a10 10 0 0 1 8-9.8A14 14 0 0 1 35 8a11 11 0 0 1 20 6 8 8 0 0 1-2 8z" fill="${c}" opacity="${o}"/>`;
+const SCENES = {
+  jour: `<svg class="scene" viewBox="0 0 300 226" preserveAspectRatio="xMidYMax slice">
+    ${NUAGE(14,22,1,"#fff",.9)}${NUAGE(210,48,.9,"#fff",.85)}
+    <path d="M0 176c40-10 70 6 110-2s80 8 120 0 50 4 70 0v52H0z" fill="#8fd8f5"/>
+    <path d="M0 190c50-8 90 6 140-2s100 6 160-2v40H0z" fill="#6cc7ef"/>
+    <path d="M0 206c60-6 100 4 150-2s100 4 150 0v22H0z" fill="#4fb4e6"/>
+    <path d="M150 128v50h-27z" fill="#fff"/><path d="M154 140v38h20z" fill="#e6f6fd"/><path d="M151 124v58" stroke="#fff" stroke-width="2"/>
+    <path d="M118 182h58l-9 11h-40z" fill="#fff"/></svg>`,
+  couchant: `<svg class="scene" viewBox="0 0 300 226" preserveAspectRatio="xMidYMax slice">
+    ${NUAGE(10,26,1.1,"#fbd08a",.9)}${NUAGE(215,56,.9,"#fbd08a",.8)}
+    <circle cx="140" cy="176" r="30" fill="#ffe29a"/>
+    <path d="M0 184c50-8 100 4 150-2s100 4 150-2v46H0z" fill="#f7a35c"/>
+    <path d="M0 202c60-6 110 4 160-2s90 4 140 0v26H0z" fill="#ee8a4f"/>
+    <g stroke="#b9561f" stroke-width="2.4" fill="none" stroke-linecap="round"><path d="M36 226V168M48 226V176M60 226V162"/></g>
+    <g fill="#b9561f"><ellipse cx="36" cy="165" rx="3" ry="8"/><ellipse cx="60" cy="159" rx="3" ry="8"/></g>
+    <ellipse cx="206" cy="196" rx="19" ry="10" fill="#fff"/>
+    <path d="M219 192c10-7 9-28-3-30" stroke="#fff" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <circle cx="214" cy="162" r="5" fill="#fff"/><path d="M218 161l8 2.5-8 2.5z" fill="#f08a2c"/></svg>`,
+  nuit: `<svg class="scene" viewBox="0 0 300 226" preserveAspectRatio="xMidYMax slice">
+    <g fill="#fff"><circle cx="36" cy="40" r="1.6"/><circle cx="92" cy="26" r="1.2"/><circle cx="150" cy="58" r="1.6"/><circle cx="190" cy="22" r="1.2"/><circle cx="270" cy="96" r="1.4"/><circle cx="60" cy="96" r="1.2"/></g>
+    <path d="M238 40a17 17 0 1 0 8 31 14 14 0 0 1-8-31z" fill="#ffd66b"/>
+    <path d="M0 176c40-24 90-30 140-8s110 12 160-14v72H0z" fill="#5a34ae"/>
+    <path d="M0 196c50-14 100-12 150 2s100 4 150-8v36H0z" fill="#472790"/>
+    <path d="M0 214c60-8 110 0 160 4s90-2 140-6v14H0z" fill="#341c78"/></svg>`
+};
+const carte = ({theme, big, txt=false, lab, top="", body=""}) =>
+  `<div class="flat ${theme}"><div class="sky">${SCENES[theme]}${top?`<div class="top">${top}</div>`:""}<div class="big ${txt?"txt":""}">${big}</div><div class="lab">${lab}</div></div><div class="low">${body}</div></div>`;
+const feuille = (src, badge="") => `<div class="sheet"><a href="${src}" target="_blank"><img src="${src}" alt=""></a>${badge?`<span class="badge">${badge}</span>`:""}</div>`;
+
+/* ---------- MODÈLES ---------- */
+const MODELES = [
+  {k:"gfs",nom:"GFS",type:"physique",run:"00 UTC · 17/11",etat:"ok",src:"NOAA / NCEP, domaine public"},
+  {k:"ifs",nom:"ECMWF IFS",type:"physique",run:"00 UTC · 17/11",etat:"ok",src:"ECMWF Open Data, CC BY 4.0"},
+  {k:"aigfs",nom:"AIGFS",type:"IA NOAA",run:"12 UTC · 16/11",etat:"late",src:"NOAA / NCEP, domaine public"},
+  {k:"aifs",nom:"ECMWF AIFS",type:"IA",run:"00 UTC · 17/11",etat:"ok",src:"ECMWF Open Data, CC BY 4.0"}];
+const POS = {gfs:"0% 0%",ifs:"100% 0%",aigfs:"0% 100%",aifs:"100% 100%"};
+let st = {page:"modeles",modele:"gfs",type:"z",vue:"un",h:144,top:"temp",sub:{},an:null,mois:null};
+function dessinerModeles() {
+  const m = MODELES.find(x=>x.k===st.modele), z = st.type==="z", grille = st.vue==="grille", img = z?"../img/modeles_z500.webp":"../img/modeles_precip.png";
+  $("#models").innerHTML = MODELES.map(x=>`<button class="model ${x.k===st.modele&&!grille?"on":""}" data-k="${x.k}"><b><i class="${x.etat==="late"?"late":""}"></i>${x.nom}<span class="tag">${x.type}</span></b><small>run ${x.run}${x.etat==="late"?" · décalé":""}</small></button>`).join("");
+  $$(".model").forEach(b=>b.onclick=()=>{st.modele=b.dataset.k;st.vue="un";dessinerModeles()});
+  $$("#seg-vue button").forEach(b=>b.classList.toggle("on",b.dataset.v===st.vue));
+  const d = new Date(Date.UTC(2026,10,17,st.h)), n = Math.floor(st.h/24), ar = z?648/565:612/669;
+  const corps = `<div class="sheet" style="padding:5px"><div class="map" style="background-image:url(${img});background-size:${grille?"100% 100%":"200% 200%"};background-position:${grille?"0 0":POS[st.modele]};aspect-ratio:${ar}"></div></div>
+    <input class="range" id="rng" type="range" min="0" max="144" step="6" value="${st.h}" aria-label="Échéance">
+    <div class="ticks"><span>J+0</span><span>J+1</span><span>J+2</span><span>J+3</span><span>J+4</span><span>J+5</span><span>J+6</span></div>
+    <p class="src">${grille?"Données : NOAA, ECMWF":"Données : "+m.src} · cartes reconstruites à partir des données brutes</p>`;
+  $("#m-card").innerHTML = carte({theme:"nuit", big:`J+${n}${st.h%24?` +${st.h%24} h`:""}`, txt:true,
+    top:`<span>${z?"Z500 et pression":"Précipitations 6 h"}</span><span>${grille?"4 modèles":m.nom}</span>`,
+    lab:`${JOURS_L[d.getUTCDay()]} ${d.getUTCDate()} ${MOIS[d.getUTCMonth()]} · ${String(d.getUTCHours()).padStart(2,"0")} h UTC`, body:corps});
+  $("#rng").oninput = e => { st.h = +e.target.value; dessinerModeles(); $("#rng").focus(); };
+}
+$$("#seg-type button").forEach(b=>b.onclick=()=>{st.type=b.dataset.t;$$("#seg-type button").forEach(x=>x.classList.toggle("on",x===b));dessinerModeles()});
+$$("#seg-vue button").forEach(b=>b.onclick=()=>{st.vue=b.dataset.v;dessinerModeles()});
+
+/* ---------- MÉTÉO : 7 cartes de gauche à droite, J+0 → J+6 ---------- */
+const CIELS = ["nuit","jour","couchant","jour","couchant","jour","nuit"];   // J+0 : il est tard ; ensuite alternance (exemple)
+function dessinerMeteo(){
+  const J = jours(), ville = $("#ville").value || "Nanterre";
+  $("#pager").innerHTML = J.map(j => {
+    const gros = j.d===0 ? j.t0 : j.tmax;
+    return `<article class="flat mc ${CIELS[j.d]}" data-i="${j.d}">
+      <div class="sky">${SCENES[CIELS[j.d]]}<div class="top"><span>${ville}</span><span>J+${j.d}</span></div><div class="big">${gros}°</div><div class="lab">${nomJour(j)}</div></div>
+      <div class="low">
+        <div class="rowj"><span><b>${dateLongue(j)}</b><small>${j.icLibelle}${j.mm?` · ${String(j.mm).replace(".",",")} mm`:""}</small></span>
+          <span class="tt">${icone(j.ic)}<span><span style="color:${couleurT(j.tmin)}">${j.tmin}°</span> / <span style="color:${couleurT(j.tmax)}">${j.tmax}°</span><small style="color:var(--soft)">rafales ${j.g} km/h</small></span></span></div>
+        ${tableauHoraire(j)}
+      </div></article>`;
+  }).join("");
+  $("#dots").innerHTML = J.map(j=>`<button data-i="${j.d}" class="${j.d===0?"on":""}">J+${j.d}</button>`).join("");
+  $$("#dots button").forEach(b=>b.onclick=()=>$(`.mc[data-i="${b.dataset.i}"]`).scrollIntoView({inline:"center",block:"nearest",behavior:"smooth"}));
+}
+$("#pager").addEventListener("scroll", () => {
+  const p = $("#pager"), cartes = $$(".mc"); if(!cartes.length) return;
+  const c = p.scrollLeft + p.clientWidth/2;
+  let i = 0, best = 1e9; cartes.forEach((el,k)=>{ const d = Math.abs(el.offsetLeft + el.offsetWidth/2 - c); if(d<best){best=d;i=k} });
+  $$("#dots button").forEach((b,k)=>b.classList.toggle("on",k===i));
+}, {passive:true});
+$("#ville").onchange = dessinerMeteo;
+
+/* ---------- CLIMAT ---------- */
+const I = "../img/";
+const CLIMAT = {
+  temp:{nom:"Température",ciel:"couchant",sub:{
+    monde:{nom:"Monde",big:"+1,40°",lab:"Monde · moyenne sur 12 mois<br>écart à 1850-1900, juillet 2026",note:"Température mondiale mensuelle depuis 1850, écart à 1850-1900 (gauche) et à 1991-2020 (droite).",img:["temperature_mensuelle.png","temperature_terre_mer.png"]},
+    france:{nom:"France",big:"France",txt:1,lab:"Température moyenne depuis 1958",note:"Météo-France (SIM), comparée à la normale 1991-2020.",img:["france_temperature_mensuelle.png"]}}},
+  cartes:{nom:"Cartes France",ciel:"couchant",cartes:true,note:"Écart à la normale 1991-2020, Météo-France (SIM), grille 8 km."},
+  glace:{nom:"Banquise",ciel:"jour",sub:{
+    arctique:{nom:"Arctique",big:"Arctique",txt:1,lab:"Étendue de la banquise",note:"En haut : l'année au jour le jour. En bas : l'écart mensuel à 1981-2010 depuis 1978.",img:["banquise_annuelle_arctique.png","banquise_arctique.png"]},
+    antarctique:{nom:"Antarctique",big:"Antarctique",txt:1,lab:"Étendue de la banquise",note:"En haut : l'année au jour le jour. En bas : l'écart mensuel à 1981-2010 depuis 1978.",img:["banquise_annuelle_antarctique.png","banquise_antarctique.png"]},
+    global:{nom:"Global",big:"Global",txt:1,lab:"Étendue de la banquise",note:"Somme des deux pôles.",img:[null]}}},
+  mers:{nom:"Mers",ciel:"nuit",sub:{
+    monde:{nom:"Global",big:"Océans",txt:1,lab:"Température de surface, monde",note:"Écart mensuel à la normale 1991-2020 depuis 1880.",img:["sst_monde.png"]},
+    nino12:{nom:"Niño 1+2",big:"Niño 1+2",txt:1,lab:"Température de surface",note:"Zone côtière du Pacifique est.",img:["sst_nino12.png"]},
+    nino34:{nom:"Niño 3.4",big:"Niño 3.4",txt:1,lab:"Température de surface",note:"Zone de référence de l'ENSO.",img:["sst_nino34.png"]},
+    med:{nom:"Méditerranée",big:"Méditerranée",txt:1,lab:"Température de surface",note:"Écart mensuel à la normale 1991-2020.",img:["sst_med.png"]}}}
+};
+/* dernier mois disponible = mois précédent (décembre de l'année d'avant si on est en janvier) */
+const NOW = new Date(), DERN = NOW.getMonth()===0 ? {a:NOW.getFullYear()-1,m:12} : {a:NOW.getFullYear(),m:NOW.getMonth()};
+function dessinerClimat(){
+  $("#c-top").innerHTML = Object.entries(CLIMAT).map(([k,o])=>`<button data-k="${k}" class="${k===st.top?"on":""}">${o.nom}</button>`).join("");
+  $$("#c-top button").forEach(b=>b.onclick=()=>{st.top=b.dataset.k;dessinerClimat()});
+  const o = CLIMAT[st.top];
+  $("#c-sel").classList.toggle("hide",!o.cartes);
+  if(o.cartes){
+    $("#c-sub").classList.add("hide");
+    const ans=[]; for(let a=DERN.a;a>=1959;a--) ans.push(a);
+    if(!ans.includes(st.an)) st.an = DERN.a;
+    const max = st.an===DERN.a?DERN.m:12; if(!st.mois||st.mois>max) st.mois = max;
+    $("#s-an").innerHTML = ans.map(a=>`<option ${a===st.an?"selected":""}>${a}</option>`).join("");
+    $("#s-mois").innerHTML = Array.from({length:max},(_,i)=>`<option value="${i+1}" ${i+1===st.mois?"selected":""}>${MOIS[i]}</option>`).join("");
+    const reel = st.an===2026 && st.mois===10;
+    $("#c-card").innerHTML = carte({theme:o.ciel, big:"+0,9°", lab:`France · ${MOIS[st.mois-1]} ${st.an}<br><small style="font-size:13px;font-weight:600;opacity:.9">écart à la normale 1991-2020${reel?"":" (valeur d'exemple)"}</small>`,
+      body:`<p class="note">${o.note}</p>`+["temperature","precipitations"].map(v=>feuille(`${I}france_carte_${v}_2026-10.png`, reel?"":"aperçu : octobre 2026")).join("")});
+    return;
+  }
+  const subs = Object.entries(o.sub), c = o.sub[st.sub[st.top]] ? st.sub[st.top] : subs[0][0], s = o.sub[c];
+  $("#c-sub").classList.remove("hide");
+  $("#c-sub").innerHTML = subs.map(([k,x])=>`<button data-k="${k}" class="${k===c?"on":""}">${x.nom}</button>`).join("");
+  $$("#c-sub button").forEach(b=>b.onclick=()=>{st.sub[st.top]=b.dataset.k;dessinerClimat()});
+  $("#c-card").innerHTML = carte({theme:o.ciel, big:s.big, txt:!!s.txt, lab:s.lab,
+    body:`<p class="note">${s.note}</p>`+s.img.map(p=>p?feuille(I+p):`<div class="sheet todo">Graphique à produire :<br>étendue de glace mondiale (Arctique + Antarctique)</div>`).join("")});
+}
+$("#s-an").onchange=e=>{st.an=+e.target.value;dessinerClimat()}; $("#s-mois").onchange=e=>{st.mois=+e.target.value;dessinerClimat()};
+
+/* ---------- NAVIGATION ---------- */
+const TITRES = {modeles:["Modèles météo","Cartes à J+6 · mises à jour dès que chaque run est publié"],meteo:["Météo","Glisse de gauche à droite : J+0 → J+6"],
+  climat:["Climat","Graphiques mis à jour à minuit"],infos:["Infos","Icônes, couleurs, sources et mises à jour"]};
+function page(){
+  ["modeles","meteo","climat","infos"].forEach(p=>$("#p-"+p).classList.toggle("hide",p!==st.page));
+  $$("nav button").forEach(b=>b.classList.toggle("on",b.dataset.p===st.page));
+  $("#titre").textContent = TITRES[st.page][0]; $("#maj").textContent = TITRES[st.page][1];
+}
+$$("nav button").forEach(b=>b.onclick=()=>{st.page=b.dataset.p;page();scrollTo(0,0)});
+rendreInfos($("#p-infos")); dessinerModeles(); dessinerMeteo(); dessinerClimat(); page();
+</script>
+</body>
+</html>

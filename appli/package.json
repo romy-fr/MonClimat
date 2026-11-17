@@ -1,0 +1,17 @@
+{
+  "name": "monclimat-appli",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Application iPhone MonClimat : modèles météo, prévisions J+0 à J+6 et climat, dans une coque Capacitor",
+  "scripts": {
+    "assembler": "python3 assembler.py",
+    "ios": "python3 assembler.py && npx cap sync ios"
+  },
+  "dependencies": {
+    "@capacitor/core": "^8.0.0",
+    "@capacitor/ios": "^8.0.0"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^8.0.0"
+  }
+}

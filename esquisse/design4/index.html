@@ -1,0 +1,299 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>MonClimat · esquisse</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,800;9..144,900&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* Typographie : celle de l'appli Sport (capture 5) : titres gras à empattements arrondis, dégradé jaune-orange et ombre
+   franche ; texte courant en sans-serif arrondie. Fonds : cartes « ciel et collines » (capture 6) en dégradés tirés de la palette
+   des graphiques (violet #2b1b6b, bleu #2184d9, jaune #ddd84f, orange #f08a2c, rouge #9c1c2c). */
+:root{color-scheme:dark;
+  --bg:#2b2152;--bg2:#221a44;--card:#352a68;--card2:#41357a;--line:#4d4090;--ink:#f6f2ff;--mute:#b8aedc;
+  --amber:#f2b52e;--orange:#f08a2c;--red:#e0452a;--crim:#9c1c2c;
+  --d1:#2b1b6b;--d2:#3a33b5;--d3:#2184d9;--d4:#4cc5cf;--d5:#bdbdb8;--d6:#ddd84f;--d7:#f2b52e;--d8:#f08a2c;--d9:#e0452a;--d10:#9c1c2c;
+  --cold:#5aa9f0;--ok:#3ac47d;--late:#f08a2c}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:linear-gradient(180deg,#34286a 0,var(--bg) 220px,var(--bg2));background-attachment:fixed;color:var(--ink);
+  font:15px/1.45 Nunito,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased;min-height:100vh}
+.app{max-width:480px;margin:0 auto;padding:calc(env(safe-area-inset-top) + 16px) 14px 120px}
+h1,h2,h3{font-family:Fraunces,Georgia,serif;font-weight:900;margin:0;line-height:1.12}
+h1,h2{background:linear-gradient(180deg,#ffd24d 0,#f5a21f 100%);-webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 2px 0 #4a1d00);letter-spacing:.2px}
+h1{font-size:34px}
+h2{font-size:24px}
+h3{font-size:15px;font-weight:800;color:var(--ink);margin:14px 0 6px}
+.sub{color:var(--mute);font-size:13.5px;margin:3px 0 14px}
+.hide{display:none!important}
+.card{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:16px;margin-bottom:12px}
+.card>.sub{margin-bottom:10px}
+.src{color:var(--mute);font-size:12px;margin:10px 2px 0}
+/* segments et puces */
+.seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;background:var(--bg2);border:1px solid var(--line);border-radius:16px;padding:3px;gap:3px;margin-bottom:12px}
+.seg button{border:0;background:none;color:var(--mute);font:700 14px Nunito;padding:10px 4px;border-radius:13px;cursor:pointer}
+.seg button.on{background:linear-gradient(180deg,#ffc83d,#f08a2c);color:#3a1500}
+.chips{display:flex;gap:6px;overflow-x:auto;margin:0 -14px 12px;padding:0 14px;scrollbar-width:none}
+.chips button{flex:0 0 auto;border:1px solid var(--line);background:var(--card);color:var(--ink);font:700 14px Nunito;padding:8px 15px;border-radius:999px;cursor:pointer}
+.chips button.on{background:linear-gradient(180deg,#ffc83d,#f08a2c);color:#3a1500;border-color:transparent}
+.chips.sm button{font-size:13px;padding:6px 13px;background:transparent}
+.chips.sm button.on{background:#f2b52e22;color:var(--amber);border-color:var(--amber)}
+/* modèles */
+.models{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.model{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:10px 12px;text-align:left;cursor:pointer;color:var(--ink);font:inherit}
+.model.on{border-color:var(--amber);box-shadow:0 0 0 1px var(--amber)}
+.model b{display:flex;align-items:center;gap:6px;font-weight:800}
+.model i{width:9px;height:9px;border-radius:50%;background:var(--ok);flex:0 0 auto}.model i.late{background:var(--late)}
+.model small{display:block;color:var(--mute);font-size:12.5px;margin-top:2px}
+.tag{font-size:10px;font-weight:700;border:1px solid var(--line);border-radius:999px;padding:1px 7px;color:var(--mute);margin-left:auto}
+.map{width:100%;border-radius:14px;background-repeat:no-repeat;background-color:#fff}
+.range{width:100%;accent-color:var(--amber);margin:14px 0 2px}
+.ticks{display:flex;justify-content:space-between;font-size:11.5px;color:#ffffffb0}
+.badges{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.runbadge{display:inline-flex;gap:6px;align-items:center;font-size:12px;font-weight:700;background:var(--card2);border:1px solid var(--line);border-radius:999px;padding:4px 10px;color:var(--mute)}
+.runbadge i{width:8px;height:8px;border-radius:50%;background:var(--ok)}
+/* cartes « ciel et collines » */
+.poster{border-radius:30px;overflow:hidden;margin-bottom:14px;box-shadow:0 14px 30px #0006;
+  --sky1:#2b2ea6;--sky2:#3f6fe0;--sky3:#7fb6f7;--h1:#8db9f7;--h2:#3f63c8;--h3:#233a96;--ground:#101b52}
+.poster.couchant{--sky1:#6f46d0;--sky2:#c76bc0;--sky3:#f9b27d;--h1:#fbd27a;--h2:#d27ab8;--h3:#8a46c2;--ground:#3d1d8f}
+.poster.climat{--sky1:#2b1b6b;--sky2:#3a33b5;--sky3:#2184d9;--h1:#4cc5cf;--h2:#2184d9;--h3:#3a33b5;--ground:#1f1450}
+.sky{position:relative;background:linear-gradient(180deg,var(--sky1),var(--sky2) 60%,var(--sky3));padding:26px 18px 10px;text-align:center;min-height:200px}
+.sky .deco{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.sky .big{position:relative;font:400 72px/1 Nunito;color:#fff;margin-top:10px}
+.sky .big.txt{font-size:44px;font-weight:700;margin-top:18px}
+.sky .lab{position:relative;font-size:17px;color:#ffffffe6;margin-top:6px}
+.hills{display:block;width:100%;height:70px;margin-top:-1px}
+.hills path:nth-child(1){fill:var(--h1)}.hills path:nth-child(2){fill:var(--h2)}.hills path:nth-child(3){fill:var(--h3)}
+.ground{background:var(--ground);margin-top:-2px;padding:6px 14px 16px;color:#fff}
+.ground .row{display:flex;align-items:center;justify-content:space-between;font-size:15px;color:#ffffffd9}
+.ground .row svg{width:46px;height:46px}
+.sheet{background:#fff;border-radius:18px;padding:6px;margin-bottom:12px;position:relative;overflow:hidden;box-shadow:0 8px 20px #0005}
+.sheet img{display:block;width:100%;height:auto;border-radius:12px}
+.sheet .badge{position:absolute;top:12px;right:12px;font-size:11px;background:#2b1b6bdd;color:#fff;border-radius:999px;padding:3px 9px}
+.sheet.todo{background:#ffffff14;border:1.5px dashed #ffffff55;box-shadow:none;padding:30px 16px;text-align:center;color:#ffffffc0;font-size:14px}
+.note{color:#ffffffd0;font-size:13.5px;margin:6px 2px 14px;text-align:center}
+.sel{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+select{font:800 15px Nunito;padding:11px 12px;border:1px solid var(--line);border-radius:16px;background:var(--card);color:var(--ink);width:100%}
+/* météo ville */
+.field{display:flex;gap:8px;margin-bottom:8px}
+.field input{flex:1;font:600 16px Nunito;padding:12px 14px;border:1px solid var(--line);border-radius:16px;background:var(--card);color:var(--ink)}
+.btn{border:0;font:800 15px Nunito;color:#fff;padding:12px 18px;border-radius:16px;cursor:pointer;background:linear-gradient(180deg,#e8483a,#9c1c2c);box-shadow:0 6px 16px #9c1c2c66}
+.btn.ghost{background:var(--card);border:1px solid var(--line);box-shadow:none;color:var(--ink)}
+.lieu{margin:4px 2px 12px}.lieu small{color:var(--mute);font-size:13px}
+details.day{background:var(--card);border:1px solid var(--line);border-radius:22px;margin-bottom:12px;overflow:hidden}
+details.day>summary{list-style:none;cursor:pointer;display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;padding:12px 14px}
+details.day>summary::-webkit-details-marker{display:none}
+.day .ico svg{width:46px;height:46px;display:block}
+.day .ttl b{font-family:Fraunces,serif;font-weight:800;font-size:18px}.day .ttl small{color:var(--mute);font-size:12.5px;display:block}
+.day .ttl em{font-style:normal;color:var(--amber);font-size:12.5px;font-weight:800}
+.day .tt{text-align:right;font-weight:800;font-size:16px}.day .tt small{display:block;font-weight:600;color:var(--mute);font-size:12px}
+table.h{width:calc(100% - 20px);margin:0 10px 10px;border-collapse:collapse;font-size:13.5px;text-align:center}
+table.h th{color:var(--mute);font-weight:600;font-size:11.5px;padding:4px 2px;border-bottom:1px solid var(--line)}
+table.h td{padding:3px 2px;border-bottom:1px solid #ffffff10;font-variant-numeric:tabular-nums}
+table.h td:first-child{color:var(--mute);text-align:left;padding-left:6px}
+table.h td svg{width:30px;height:30px;display:block;margin:0 auto}
+.mm{display:inline-block;min-width:34px;padding:2px 6px;border-radius:8px;font-weight:800;font-size:12px}
+.t{font-weight:800}
+/* carrousel météo */
+.dots{display:flex;gap:6px;overflow-x:auto;margin:0 -14px 10px;padding:0 14px;scrollbar-width:none}
+.dots button{flex:1 0 auto;border:1px solid var(--line);background:var(--card);color:var(--mute);font:800 12.5px Nunito;padding:7px 10px;border-radius:999px;cursor:pointer}
+.dots button.on{background:linear-gradient(180deg,#ffc83d,#f08a2c);color:#3a1500;border-color:transparent}
+.pager{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;margin:0 -14px;padding:0 14px 8px;scrollbar-width:none}
+.pager .poster{flex:0 0 88%;scroll-snap-align:center;margin:0;height:640px;display:flex;flex-direction:column}
+.pager .sky{min-height:170px;padding-top:20px;flex:0 0 auto}
+.pager .sky .big{font-size:64px}
+.pager .hills{flex:0 0 auto}
+.pager .ground{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;padding-bottom:10px}
+.pager .tab{flex:1 1 auto;overflow-y:auto;margin-top:8px;scrollbar-width:thin}
+.pager table.h{width:100%;margin:0}
+.pager table.h th{position:sticky;top:0;background:var(--ground);color:#fff}
+.pager table.h td{color:#fff}.pager table.h td:first-child{color:#ffffffb0}
+table.h{border-collapse:collapse;font-size:13.5px;text-align:center}
+table.h th{font-weight:700;font-size:11.5px;padding:4px 2px;border-bottom:1px solid #ffffff30}
+table.h th small{opacity:.75;font-weight:600}
+table.h td{padding:3px 2px;border-bottom:1px solid #ffffff14;font-variant-numeric:tabular-nums}
+table.h td:first-child{text-align:left;padding-left:6px}
+table.h td svg{width:30px;height:30px;display:block;margin:0 auto}
+.mm{display:inline-block;min-width:34px;padding:2px 6px;border-radius:8px;font-weight:800;font-size:12px}
+.t{font-weight:800}
+/* infos */
+.ic-list,.key,.plain,.src-list{list-style:none;margin:0;padding:0}
+.ic-list li{display:grid;grid-template-columns:44px 1fr;gap:10px;align-items:center;padding:6px 0;border-bottom:1px solid #ffffff10}
+.ic-list .ic svg{width:42px;height:42px;display:block}
+.ic-list b{font-weight:800}.ic-list small{display:block;color:var(--mute);font-size:12.5px;line-height:1.35}
+.key{display:grid;grid-template-columns:1fr 1fr;gap:6px 10px;font-size:13.5px}
+.key li{display:flex;align-items:center;gap:8px}.key i{width:22px;height:14px;border-radius:5px;flex:0 0 auto}
+.plain li{padding:6px 0;border-bottom:1px solid #ffffff10;font-size:14px}
+.src-list li{padding:7px 0;border-bottom:1px solid #ffffff10;font-size:13.5px}
+.src-list b{display:block;font-weight:800}.src-list span{color:var(--ink)}.src-list small{display:block;color:var(--mute);font-size:12px}
+/* barre d'onglets flottante */
+nav{position:fixed;left:0;right:0;bottom:calc(env(safe-area-inset-bottom) + 14px);display:flex;justify-content:center;pointer-events:none}
+nav div{pointer-events:auto;width:min(94%,450px);background:#2b2152ee;backdrop-filter:blur(16px);border:1px solid var(--line);border-radius:32px;padding:6px;
+  display:grid;grid-template-columns:repeat(4,1fr);gap:3px;box-shadow:0 12px 30px #0008}
+nav button{border:0;background:none;color:var(--mute);font:800 11px Nunito;display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 0;border-radius:26px;cursor:pointer}
+nav button svg{width:25px;height:25px}
+nav button.on{color:var(--amber);background:#f2b52e24}
+button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
+</style>
+</head>
+<body>
+<div class="app">
+  <header><h1 id="titre"></h1><p class="sub" id="maj"></p></header>
+
+  <main id="p-modeles">
+    <div class="models" id="models"></div>
+    <div class="seg" id="seg-type"><button class="on" data-t="z">Z500 et pression</button><button data-t="p">Précipitations</button></div>
+    <div id="m-poster"></div>
+    <div class="seg" id="seg-vue"><button class="on" data-v="un">Un modèle</button><button data-v="grille">Les 4 en grille</button></div>
+  </main>
+
+  <main id="p-meteo" class="hide">
+    <div class="field"><input id="ville" value="Nanterre" aria-label="Lieu"><button class="btn">Chercher</button></div>
+    <button class="btn ghost" style="width:100%;margin-bottom:14px">📍 Ma position</button>
+    <div class="badges" style="margin:0 2px 14px"><span class="runbadge"><i></i>AROME · run 12 UTC du 17/11</span><span class="runbadge"><i></i>ECMWF IFS · run 00 UTC du 17/11</span></div>
+    <div class="dots" id="dots"></div>
+    <div class="pager" id="pager"></div>
+  </main>
+
+  <main id="p-climat" class="hide">
+    <div class="chips" id="c-top"></div>
+    <div class="chips sm" id="c-sub"></div>
+    <div class="sel hide" id="c-sel"><select id="s-an" aria-label="Année"></select><select id="s-mois" aria-label="Mois"></select></div>
+    <div id="c-poster"></div>
+    <p class="src" style="text-align:center">Graphiques recalculés chaque nuit à minuit · touche une image pour l'agrandir</p>
+  </main>
+
+  <main id="p-infos" class="hide"></main>
+</div>
+
+<nav><div>
+  <button data-p="modeles"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="7" height="7" rx="2"/><rect x="13.5" y="3.5" width="7" height="7" rx="2"/><rect x="3.5" y="13.5" width="7" height="7" rx="2"/><rect x="13.5" y="13.5" width="7" height="7" rx="2"/></svg>Modèles</button>
+  <button data-p="meteo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7 19a4 4 0 1 1 .9-7.9A5.5 5.5 0 0 1 18.5 12 3.5 3.5 0 0 1 18 19z"/><path d="M9.5 5.5l.7-1.6M5.2 7.2L3.8 6M13.5 4.2l.6-1.7"/></svg>Météo</button>
+  <button data-p="climat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l5-5 4 4 8-9"/><path d="M15 7h5v5"/></svg>Climat</button>
+  <button data-p="infos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 7.8v.2"/></svg>Infos</button>
+</div></nav>
+
+<script type="module">
+import {ICONES, icone} from "../modules/icones.js";
+import {jours, nomJour, dateLongue, tableauHoraire} from "../modules/previsions.js";
+import {rendreInfos} from "../modules/infos.js";
+
+const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
+const MOIS = ["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"];
+const JOURS = ["dim.","lun.","mar.","mer.","jeu.","ven.","sam."], JOURS_L = ["dimanche","lundi","mardi","mercredi","jeudi","vendredi","samedi"];
+
+/* ---------- carte « ciel et collines » ---------- */
+const NUAGE = (x,y,s,c) => `<path transform="translate(${x} ${y}) scale(${s})" d="M0 22a10 10 0 0 1 8-9.8A14 14 0 0 1 35 8a11 11 0 0 1 20 6 8 8 0 0 1-2 8z" fill="${c}"/>`;
+const DECO = {
+  nuit: `<svg class="deco" viewBox="0 0 300 200" preserveAspectRatio="xMidYMin slice"><circle cx="58" cy="48" r="26" fill="#ffffff" opacity=".95"/><circle cx="58" cy="48" r="40" fill="#ffffff" opacity=".18"/>${NUAGE(190,22,1.2,"#7fb6f7")}${NUAGE(228,64,.9,"#a4cbfa")}${NUAGE(10,92,1,"#6ea4f0")}</svg>`,
+  couchant: `<svg class="deco" viewBox="0 0 300 200" preserveAspectRatio="xMidYMin slice">${NUAGE(20,26,1.3,"#fbd27a")}${NUAGE(205,48,1.2,"#fbd27a")}${NUAGE(120,96,1.1,"#f9c27b")}</svg>`,
+  climat: `<svg class="deco" viewBox="0 0 300 200" preserveAspectRatio="xMidYMin slice"><circle cx="248" cy="46" r="20" fill="#ddd84f" opacity=".95"/><circle cx="248" cy="46" r="34" fill="#ddd84f" opacity=".18"/>${NUAGE(10,20,.9,"#4cc5cf")}${NUAGE(232,118,.8,"#2184d9")}</svg>`
+};
+const COLLINES = `<svg class="hills" viewBox="0 0 300 70" preserveAspectRatio="none"><path d="M0 28C40 6 90 4 140 22s110 8 160-8v56H0z"/><path d="M0 40C50 26 100 30 150 42s100 4 150-10v38H0z"/><path d="M0 52C60 44 110 46 160 54s90-2 140-8v24H0z"/></svg>`;
+function poster({theme="nuit", deco=theme, big, bigTxt=false, lab, ground=""}) {
+  return `<div class="poster ${theme}"><div class="sky">${DECO[deco]}<div class="big ${bigTxt?"txt":""}">${big}</div><div class="lab">${lab}</div></div>${COLLINES}<div class="ground">${ground}</div></div>`;
+}
+const feuille = (src, badge="") => `<div class="sheet"><a href="${src}" target="_blank"><img src="${src}" alt=""></a>${badge?`<span class="badge">${badge}</span>`:""}</div>`;
+
+/* ---------- MODÈLES ---------- */
+const MODELES = [
+  {k:"gfs",nom:"GFS",type:"physique",run:"00 UTC · 17/11",etat:"ok",src:"NOAA / NCEP, domaine public"},
+  {k:"ifs",nom:"ECMWF IFS",type:"physique",run:"00 UTC · 17/11",etat:"ok",src:"ECMWF Open Data, CC BY 4.0"},
+  {k:"aigfs",nom:"AIGFS",type:"IA NOAA",run:"12 UTC · 16/11",etat:"late",src:"NOAA / NCEP, domaine public"},
+  {k:"aifs",nom:"ECMWF AIFS",type:"IA",run:"00 UTC · 17/11",etat:"ok",src:"ECMWF Open Data, CC BY 4.0"}];
+const POS = {gfs:"0% 0%",ifs:"100% 0%",aigfs:"0% 100%",aifs:"100% 100%"};
+let st = {page:"modeles",modele:"gfs",type:"z",vue:"un",h:144,top:"temp",sub:{},an:null,mois:null};
+function dessinerModeles() {
+  const m = MODELES.find(x=>x.k===st.modele), z = st.type==="z", grille = st.vue==="grille", img = z?"../img/modeles_z500.webp":"../img/modeles_precip.png";
+  $("#models").innerHTML = MODELES.map(x=>`<button class="model ${x.k===st.modele&&!grille?"on":""}" data-k="${x.k}"><b><i class="${x.etat==="late"?"late":""}"></i>${x.nom}<span class="tag">${x.type}</span></b><small>run ${x.run}${x.etat==="late"?" · décalé":""}</small></button>`).join("");
+  $$(".model").forEach(b=>b.onclick=()=>{st.modele=b.dataset.k;st.vue="un";dessinerModeles()});
+  $$("#seg-vue button").forEach(b=>b.classList.toggle("on",b.dataset.v===st.vue));
+  const d = new Date(Date.UTC(2026,10,17,st.h)), n = Math.floor(st.h/24), ar = z?648/565:612/669;
+  const carte = `<div class="sheet" style="padding:5px"><div class="map" style="background-image:url(${img});background-size:${grille?"100% 100%":"200% 200%"};background-position:${grille?"0 0":POS[st.modele]};aspect-ratio:${ar}"></div></div>
+    <input class="range" id="rng" type="range" min="0" max="144" step="6" value="${st.h}" aria-label="Échéance">
+    <div class="ticks"><span>J+0</span><span>J+1</span><span>J+2</span><span>J+3</span><span>J+4</span><span>J+5</span><span>J+6</span></div>
+    <p class="src" style="color:#ffffffa8">${grille?"Données : NOAA, ECMWF":"Données : "+m.src} · cartes reconstruites à partir des données brutes</p>`;
+  $("#m-poster").innerHTML = poster({theme:"nuit", big:`J+${n}${st.h%24?` +${st.h%24} h`:""}`, bigTxt:true,
+    lab:`${JOURS_L[d.getUTCDay()]} ${d.getUTCDate()} ${MOIS[d.getUTCMonth()]} · ${String(d.getUTCHours()).padStart(2,"0")} h UTC<br><span style="font-size:14px;opacity:.85">${(z?"Z500 et pression":"Précipitations 6 h et type")} · ${grille?"4 modèles":m.nom+" · run "+m.run}</span>`, ground:carte});
+  $("#rng").oninput = e => { st.h = +e.target.value; dessinerModeles(); $("#rng").focus(); };
+}
+$$("#seg-type button").forEach(b=>b.onclick=()=>{st.type=b.dataset.t;$$("#seg-type button").forEach(x=>x.classList.toggle("on",x===b));dessinerModeles()});
+$$("#seg-vue button").forEach(b=>b.onclick=()=>{st.vue=b.dataset.v;dessinerModeles()});
+
+/* ---------- MÉTÉO : 7 cartes J+0 → J+6, de gauche à droite ---------- */
+const PLUVIEUX = new Set(["bruinef","bruine","bruinefo","pluief","pluie","pluiefo","avf","av","avfo","orage","orageg","neigef","neige","neigefo","avneige","grains","bruinev","pluiev","pluievfo"]);
+function dessinerMeteo(){
+  const ville = $("#ville").value || "Nanterre", J = jours();
+  $("#pager").innerHTML = J.map(j=>{
+    const theme = PLUVIEUX.has(j.ic) ? "nuit" : "couchant";
+    const entete = `<div class="row"><span>${nomJour(j)}<br><small style="opacity:.8">${dateLongue(j)} · ${ville}</small></span><span style="text-align:right">${icone(j.ic)}<small style="display:block;opacity:.9">${j.tmin}° / ${j.tmax}°</small></span></div>`;
+    return poster({theme, big:`${j.d===0?j.t0:j.tmax}°`, lab:`${nomJour(j)} · ${j.icLibelle}`, ground:entete+`<div class="tab">${tableauHoraire(j)}</div>`});
+  }).join("");
+  $("#dots").innerHTML = J.map((j,i)=>`<button data-i="${i}" class="${i===0?"on":""}">J+${i}</button>`).join("");
+  const pager = $("#pager");
+  $$("#dots button").forEach(b=>b.onclick=()=>pager.children[+b.dataset.i].scrollIntoView({behavior:"smooth",inline:"center",block:"nearest"}));
+  pager.onscroll = () => { const i = Math.round(pager.scrollLeft/(pager.children[0].offsetWidth+12));
+    $$("#dots button").forEach((b,k)=>b.classList.toggle("on",k===i)); };
+}
+$("#ville").onchange = dessinerMeteo;
+
+/* ---------- CLIMAT ---------- */
+const I = "../img/";
+const CLIMAT = {
+  temp:{nom:"Température",sub:{
+    monde:{nom:"Monde",big:"+1,40°",lab:"Monde · moyenne sur 12 mois<br>écart à 1850-1900, juillet 2026",note:"Température mondiale mensuelle depuis 1850, écart à 1850-1900 (gauche) et à 1991-2020 (droite).",img:["temperature_mensuelle.png","temperature_terre_mer.png"]},
+    france:{nom:"France",big:"France",txt:1,lab:"Température moyenne depuis 1958",note:"Météo-France (SIM), comparée à la normale 1991-2020.",img:["france_temperature_mensuelle.png"]}}},
+  cartes:{nom:"Cartes France",cartes:true,note:"Écart à la normale 1991-2020, Météo-France (SIM), grille 8 km."},
+  glace:{nom:"Banquise",sub:{
+    arctique:{nom:"Arctique",big:"Arctique",txt:1,lab:"Étendue de la banquise",note:"En haut : l'année au jour le jour. En bas : l'écart mensuel à 1981-2010 depuis 1978.",img:["banquise_annuelle_arctique.png","banquise_arctique.png"]},
+    antarctique:{nom:"Antarctique",big:"Antarctique",txt:1,lab:"Étendue de la banquise",note:"En haut : l'année au jour le jour. En bas : l'écart mensuel à 1981-2010 depuis 1978.",img:["banquise_annuelle_antarctique.png","banquise_antarctique.png"]},
+    global:{nom:"Global",big:"Global",txt:1,lab:"Étendue de la banquise",note:"Somme des deux pôles.",img:[null]}}},
+  mers:{nom:"Mers",sub:{
+    monde:{nom:"Global",big:"Océans",txt:1,lab:"Température de surface, monde",note:"Écart mensuel à la normale 1991-2020 depuis 1880.",img:["sst_monde.png"]},
+    nino12:{nom:"Niño 1+2",big:"Niño 1+2",txt:1,lab:"Température de surface",note:"Zone côtière du Pacifique est.",img:["sst_nino12.png"]},
+    nino34:{nom:"Niño 3.4",big:"Niño 3.4",txt:1,lab:"Température de surface",note:"Zone de référence de l'ENSO.",img:["sst_nino34.png"]},
+    med:{nom:"Méditerranée",big:"Méditerranée",txt:1,lab:"Température de surface",note:"Écart mensuel à la normale 1991-2020.",img:["sst_med.png"]}}}
+};
+/* dernier mois disponible = mois précédent (décembre de l'année d'avant si on est en janvier) */
+const NOW = new Date(), DERN = NOW.getMonth()===0 ? {a:NOW.getFullYear()-1,m:12} : {a:NOW.getFullYear(),m:NOW.getMonth()};
+function dessinerClimat(){
+  $("#c-top").innerHTML = Object.entries(CLIMAT).map(([k,o])=>`<button data-k="${k}" class="${k===st.top?"on":""}">${o.nom}</button>`).join("");
+  $$("#c-top button").forEach(b=>b.onclick=()=>{st.top=b.dataset.k;dessinerClimat()});
+  const o = CLIMAT[st.top];
+  $("#c-sel").classList.toggle("hide",!o.cartes);
+  if(o.cartes){
+    $("#c-sub").classList.add("hide");
+    const ans=[]; for(let a=DERN.a;a>=1959;a--) ans.push(a);
+    if(!ans.includes(st.an)) st.an = DERN.a;
+    const max = st.an===DERN.a?DERN.m:12; if(!st.mois||st.mois>max) st.mois = max;
+    $("#s-an").innerHTML = ans.map(a=>`<option ${a===st.an?"selected":""}>${a}</option>`).join("");
+    $("#s-mois").innerHTML = Array.from({length:max},(_,i)=>`<option value="${i+1}" ${i+1===st.mois?"selected":""}>${MOIS[i]}</option>`).join("");
+    const reel = st.an===2026 && st.mois===10;
+    $("#c-poster").innerHTML = poster({theme:"couchant", deco:"couchant", big:"+0,9°", lab:`France · ${MOIS[st.mois-1]} ${st.an}<br><span style="font-size:14px;opacity:.85">écart à la normale 1991-2020${reel?"":" (valeur d'exemple)"}</span>`,
+      ground:`<p class="note" style="margin-top:0">${o.note}</p>`+["temperature","precipitations"].map(v=>feuille(`${I}france_carte_${v}_2026-10.png`, reel?"":"aperçu : octobre 2026")).join("")});
+    return;
+  }
+  const subs = Object.entries(o.sub), c = o.sub[st.sub[st.top]] ? st.sub[st.top] : subs[0][0], s = o.sub[c];
+  $("#c-sub").classList.remove("hide");
+  $("#c-sub").innerHTML = subs.map(([k,x])=>`<button data-k="${k}" class="${k===c?"on":""}">${x.nom}</button>`).join("");
+  $$("#c-sub button").forEach(b=>b.onclick=()=>{st.sub[st.top]=b.dataset.k;dessinerClimat()});
+  $("#c-poster").innerHTML = poster({theme:"climat", big:s.big, bigTxt:!!s.txt, lab:s.lab,
+    ground:`<p class="note" style="margin-top:0">${s.note}</p>`+s.img.map(p=>p?feuille(I+p):`<div class="sheet todo">Graphique à produire :<br>étendue de glace mondiale (Arctique + Antarctique)</div>`).join("")});
+}
+$("#s-an").onchange=e=>{st.an=+e.target.value;dessinerClimat()}; $("#s-mois").onchange=e=>{st.mois=+e.target.value;dessinerClimat()};
+
+/* ---------- NAVIGATION ---------- */
+const TITRES = {modeles:["Modèles météo","Cartes à J+6 · mises à jour dès que chaque run est publié"],meteo:["Météo","AROME à J+0 et J+1, ECMWF IFS ensuite"],
+  climat:["Climat","Graphiques mis à jour à minuit"],infos:["Infos","Icônes, couleurs, sources et mises à jour"]};
+function page(){
+  ["modeles","meteo","climat","infos"].forEach(p=>$("#p-"+p).classList.toggle("hide",p!==st.page));
+  $$("nav button").forEach(b=>b.classList.toggle("on",b.dataset.p===st.page));
+  $("#titre").textContent = TITRES[st.page][0]; $("#maj").textContent = TITRES[st.page][1];
+}
+$$("nav button").forEach(b=>b.onclick=()=>{st.page=b.dataset.p;page();scrollTo(0,0)});
+rendreInfos($("#p-infos")); dessinerModeles(); dessinerMeteo(); dessinerClimat(); page();
+</script>
+</body>
+</html>
+

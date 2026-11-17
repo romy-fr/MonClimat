@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+sortie/
+demo/
+*.grib2
+*.idx
+*.nc
+.claude/scheduled_tasks.lock
+appli/www/
+appli/node_modules/
+appli/ios/
+.claude/

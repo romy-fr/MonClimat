@@ -1,0 +1,136 @@
+name: Appli – TestFlight
+
+# Construit l'application iPhone MonClimat (dossier appli/ : la page de app/ dans une coque Capacitor) sur une machine
+# macOS de GitHub, la signe et l'envoie à TestFlight. À lancer à la main (Actions → « Appli – TestFlight » → Run workflow).
+#
+# Secrets du dépôt (Settings → Secrets and variables → Actions) :
+#   APPLE_TEAM_ID     identifiant d'équipe (developer.apple.com → Membership)
+#   ASC_KEY_ID        identifiant de la clé d'API App Store Connect (Users and Access → Integrations → Team Keys)
+#   ASC_ISSUER_ID     « Issuer ID » affiché au-dessus de la liste des clés
+#   ASC_KEY_P8        contenu du fichier AuthKey_XXXX.p8 téléchargé à la création de la clé (rôle Admin ou App Manager)
+# Variable du dépôt (onglet Variables) :
+#   APP_BUNDLE_ID     identifiant de l'application, celui de sa fiche App Store Connect (ex. fr.tonnom.monclimat)
+on:
+  workflow_dispatch:
+
+jobs:
+  testflight:
+    runs-on: macos-15-intel
+    timeout-minutes: 45
+    env:
+      TEAM: ${{ secrets.APPLE_TEAM_ID }}
+      BUNDLE: ${{ vars.APP_BUNDLE_ID }}
+      NUMERO: ${{ github.run_number }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      # Capacitor 8 demande Xcode 26 ou plus (et Apple n'accepte plus les builds de SDK plus anciens)
+      - uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
+      - name: Vérifier les réglages
+        run: |
+          test -n "$TEAM" || { echo "Secret APPLE_TEAM_ID manquant"; exit 1; }
+          test -n "$BUNDLE" || { echo "Variable APP_BUNDLE_ID manquante"; exit 1; }
+
+      - name: Dépendances et contenu de l'application (appli/www)
+        working-directory: appli
+        run: |
+          npm install
+          python3 assembler.py
+
+      - name: Projet iOS (Capacitor)
+        working-directory: appli
+        run: |
+          python3 - <<'EOF'
+          import json, os
+          c = json.load(open("capacitor.config.json"))
+          c["appId"] = os.environ["BUNDLE"]
+          json.dump(c, open("capacitor.config.json", "w"), indent=2)
+          EOF
+          npx cap add ios
+          npx cap sync ios
+
+      - name: Icône de l'application (appli/icone.png, produite par creer_icone.py)
+        working-directory: appli
+        run: |
+          DOSSIER=$(find ios/App/App/Assets.xcassets -name "AppIcon.appiconset" | head -1)
+          test -n "$DOSSIER" || { echo "AppIcon.appiconset introuvable"; exit 1; }
+          for f in "$DOSSIER"/*.png; do cp icone.png "$f"; done      # une seule taille (1024 px) dans le modèle Capacitor
+          ls "$DOSSIER"
+
+      - name: Version, orientation et signature
+        working-directory: appli/ios/App
+        run: |
+          PLIST=App/Info.plist
+          /usr/libexec/PlistBuddy -c "Add :ITSAppUsesNonExemptEncryption bool false" "$PLIST" 2>/dev/null || /usr/libexec/PlistBuddy -c "Set :ITSAppUsesNonExemptEncryption false" "$PLIST"
+          # iPhone seulement, en portrait (pas de captures iPad à fournir, pas de mise en page paysage)
+          /usr/libexec/PlistBuddy -c "Delete :UISupportedInterfaceOrientations" "$PLIST" || true
+          /usr/libexec/PlistBuddy -c "Add :UISupportedInterfaceOrientations array" "$PLIST"
+          /usr/libexec/PlistBuddy -c "Add :UISupportedInterfaceOrientations:0 string UIInterfaceOrientationPortrait" "$PLIST"
+          /usr/libexec/PlistBuddy -c "Delete :UISupportedInterfaceOrientations~ipad" "$PLIST" || true
+          sed -i '' 's|TARGETED_DEVICE_FAMILY = "1,2";|TARGETED_DEVICE_FAMILY = 1;|' App.xcodeproj/project.pbxproj
+          # réglages de la cible App : équipe, signature automatique, numéro de build
+          sed -i '' "s|INFOPLIST_FILE = App/Info.plist;|INFOPLIST_FILE = App/Info.plist; DEVELOPMENT_TEAM = $TEAM; CODE_SIGN_STYLE = Automatic;|" App.xcodeproj/project.pbxproj
+          sed -i '' "s|CURRENT_PROJECT_VERSION = [0-9]*;|CURRENT_PROJECT_VERSION = $NUMERO;|" App.xcodeproj/project.pbxproj
+          sed -i '' "s|MARKETING_VERSION = [0-9.]*;|MARKETING_VERSION = 1.0.0;|" App.xcodeproj/project.pbxproj      # version affichée dans TestFlight : 1.0.0
+          grep -c "MARKETING_VERSION = 1.0.0" App.xcodeproj/project.pbxproj
+
+      - name: Clé d'API App Store Connect
+        env:
+          ASC_KEY_P8: ${{ secrets.ASC_KEY_P8 }}
+        run: |
+          printf '%s' "$ASC_KEY_P8" > "$RUNNER_TEMP/cle.p8"
+          test -s "$RUNNER_TEMP/cle.p8" || { echo "Secret ASC_KEY_P8 manquant"; exit 1; }
+
+      - name: Nettoyer les certificats de développement créés par Xcode (le Mac de build change à chaque exécution)
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+        run: |
+          python3 -m venv "$RUNNER_TEMP/venv"
+          "$RUNNER_TEMP/venv/bin/python" -m pip install --quiet pyjwt cryptography
+          "$RUNNER_TEMP/venv/bin/python" - <<'EOF'
+          import json, os, time, urllib.request
+          import jwt
+          cle = open(os.environ["RUNNER_TEMP"] + "/cle.p8").read()
+          jeton = jwt.encode({"iss": os.environ["ASC_ISSUER_ID"], "iat": int(time.time()), "exp": int(time.time()) + 600, "aud": "appstoreconnect-v1"},
+                             cle, algorithm="ES256", headers={"kid": os.environ["ASC_KEY_ID"], "typ": "JWT"})
+          def appel(methode, url):
+              r = urllib.request.Request(url, method=methode, headers={"Authorization": "Bearer " + jeton})
+              with urllib.request.urlopen(r) as f:
+                  corps = f.read()
+              return json.loads(corps) if corps else {}
+          try:
+              j = appel("GET", "https://api.appstoreconnect.apple.com/v1/certificates?filter[certificateType]=DEVELOPMENT,IOS_DEVELOPMENT&limit=200")
+              for c in j.get("data", []):
+                  nom = c["attributes"].get("name", "")
+                  if "Created via API" in nom:          # seulement ceux créés par Xcode avec la clé d'API (pas ceux d'un vrai Mac)
+                      print("suppression :", nom, c["id"])
+                      appel("DELETE", "https://api.appstoreconnect.apple.com/v1/certificates/" + c["id"])
+          except Exception as e:
+              print("nettoyage impossible (on continue) :", e)
+          EOF
+
+      - name: Archiver et envoyer à TestFlight
+        working-directory: appli/ios/App
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+        run: |
+          if [ -d App.xcworkspace ]; then CIBLE="-workspace App.xcworkspace"; else CIBLE="-project App.xcodeproj"; fi
+          CLE="-allowProvisioningUpdates -authenticationKeyPath $RUNNER_TEMP/cle.p8 -authenticationKeyID $ASC_KEY_ID -authenticationKeyIssuerID $ASC_ISSUER_ID"
+          xcodebuild $CIBLE -scheme App -configuration Release -destination "generic/platform=iOS" \
+            -archivePath "$RUNNER_TEMP/MonClimat.xcarchive" archive $CLE
+          /usr/libexec/PlistBuddy -c "Set :teamID $TEAM" ../../export.plist
+          xcodebuild -exportArchive -archivePath "$RUNNER_TEMP/MonClimat.xcarchive" \
+            -exportOptionsPlist ../../export.plist -exportPath "$RUNNER_TEMP/sortie" $CLE
+
+      - name: Supprimer la clé
+        if: always()
+        run: rm -f "$RUNNER_TEMP/cle.p8"

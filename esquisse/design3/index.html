@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>MonClimat · esquisse 3</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,800;9..144,900&family=Nunito:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* Esquisse 3 : cartes plein cadre aux dégradés vifs (rouge-violet, rose-jaune, vert-bleu-violet), grands chiffres blancs fins,
+   texte de lieu et de date en petit, trait vertical fin. Fond pâle rose-lavande comme la référence ; couleurs des dégradés
+   tirées de la palette des graphiques (violet #2b1b6b, bleu #2184d9, jaune #ddd84f, orange #f08a2c, rouge #9c1c2c). */
+:root{color-scheme:light;
+  --ink:#2b1b6b;--mute:#6f5fa8;--line:#ffffffb0;--white:#fff;
+  --violet:#2b1b6b;--blue:#2184d9;--yellow:#ddd84f;--orange:#f08a2c;--red:#e0452a;--crim:#9c1c2c;
+  --ok:#2fb67a;--late:#f08a2c}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:linear-gradient(180deg,#fdd5cd 0,#efcaf0 45%,#cfc6f7 100%);background-attachment:fixed;color:var(--ink);
+  font:15px/1.45 Nunito,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased;min-height:100vh}
+.app{max-width:480px;margin:0 auto;padding:calc(env(safe-area-inset-top) + 18px) 14px 120px}
+h1,h2,h3{font-family:Fraunces,Georgia,serif;margin:0;line-height:1.12}
+h1{font-weight:900;font-size:34px;color:var(--ink)}
+.sub{color:var(--mute);font-size:13.5px;margin:3px 0 14px}
+.hide{display:none!important}
+/* segments, puces, champs */
+.seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;background:#ffffffa6;border:1px solid var(--line);border-radius:18px;padding:3px;gap:3px;margin-bottom:12px;backdrop-filter:blur(8px)}
+.seg button{border:0;background:none;color:var(--mute);font:700 14px Nunito;padding:10px 4px;border-radius:15px;cursor:pointer}
+.seg button.on{background:linear-gradient(135deg,#ff5a52,#9c3bd0);color:#fff;box-shadow:0 6px 14px #9c3bd044}
+.chips{display:flex;gap:6px;overflow-x:auto;margin:0 -14px 12px;padding:0 14px;scrollbar-width:none}
+.chips button{flex:0 0 auto;border:1px solid var(--line);background:#ffffffb8;color:var(--ink);font:700 14px Nunito;padding:8px 15px;border-radius:999px;cursor:pointer}
+.chips button.on{background:linear-gradient(135deg,#ff5a52,#9c3bd0);color:#fff;border-color:transparent}
+.chips.sm button{font-size:13px;padding:6px 13px;background:transparent}
+.chips.sm button.on{background:#ffffffd0;color:var(--ink);border-color:#fff}
+.sel{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+select,.field input{font:700 15px Nunito;padding:11px 14px;border:1px solid var(--line);border-radius:18px;background:#ffffffc8;color:var(--ink);width:100%}
+.field{display:flex;gap:8px;margin-bottom:8px}.field input{flex:1;font-weight:600}
+.btn{border:0;font:800 15px Nunito;color:#fff;padding:12px 18px;border-radius:18px;cursor:pointer;background:linear-gradient(135deg,#ff5a52,#9c3bd0);box-shadow:0 8px 18px #9c3bd044}
+.btn.ghost{background:#ffffffb8;border:1px solid var(--line);box-shadow:none;color:var(--ink)}
+.src{color:var(--mute);font-size:12px;margin:10px 2px 0}
+.badges{display:flex;flex-wrap:wrap;gap:6px;margin:0 2px 12px}
+.runbadge{display:inline-flex;gap:6px;align-items:center;font-size:12px;font-weight:700;background:#ffffffa6;border:1px solid var(--line);border-radius:999px;padding:3px 10px;color:var(--mute)}
+.runbadge i{width:8px;height:8px;border-radius:50%;background:var(--ok)}
+/* modèles */
+.models{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.model{background:#ffffffb8;border:1px solid var(--line);border-radius:20px;padding:10px 12px;text-align:left;cursor:pointer;color:var(--ink);font:inherit}
+.model.on{background:linear-gradient(135deg,#ff5a52,#9c3bd0);color:#fff;border-color:transparent;box-shadow:0 8px 18px #9c3bd044}
+.model b{display:flex;align-items:center;gap:6px;font-weight:800}
+.model i{width:9px;height:9px;border-radius:50%;background:var(--ok);flex:0 0 auto;box-shadow:0 0 0 2px #ffffff90}.model i.late{background:var(--late)}
+.model small{display:block;color:var(--mute);font-size:12.5px;margin-top:2px}.model.on small{color:#ffffffd8}
+.tag{font-size:10px;font-weight:700;border:1px solid currentColor;border-radius:999px;padding:1px 7px;opacity:.7;margin-left:auto}
+/* cartes plein cadre */
+.hero{position:relative;border-radius:30px;overflow:hidden;color:#fff;margin-bottom:14px;box-shadow:0 18px 36px #4b1d8a40;padding:22px 20px 18px}
+.hero .deco{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.hero>*:not(.deco){position:relative}
+.v-chaud{background:linear-gradient(165deg,#ff5a52 0%,#e03a6f 38%,#8a3bd0 75%,#5a3bd6 100%)}
+.v-soleil{background:linear-gradient(180deg,#ff9f9a 0%,#ff8aa8 32%,#c35bd0 70%,#6a3bd0 100%)}
+.v-froid{background:linear-gradient(170deg,#22c9a0 0%,#2d9be0 42%,#4a46d6 78%,#5a2fb8 100%)}
+.v-nuit{background:linear-gradient(170deg,#2b1b6b 0%,#3a33b5 50%,#7a3bd0 100%)}
+.v-mer{background:linear-gradient(170deg,#4cc5cf 0%,#2184d9 45%,#3a33b5 100%)}
+.date{border-left:1px solid #ffffffd0;padding-left:12px;font-size:12.5px;line-height:1.3;color:#ffffffe6}
+.date b{display:block;font:300 22px/1.1 Nunito}
+.big{font:300 64px/1 Nunito;letter-spacing:-1px}
+.big.txt{font-size:42px;font-weight:400}
+.lieu{font-size:12.5px;color:#ffffffe6;margin-top:4px;border-top:1px solid #ffffffa0;padding-top:6px}
+.petit{font-size:13px;line-height:1.35;text-align:right;color:#ffffffe6}
+.bas{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-top:14px}
+.bas>div:first-child{flex:1}
+.feuille{background:#fff;border-radius:20px;padding:6px;margin-top:14px;box-shadow:0 12px 26px #2b1b6b4d}
+.feuille img{display:block;width:100%;height:auto;border-radius:14px}
+.feuille .badge{position:absolute;top:12px;right:12px;font-size:11px;background:#2b1b6bdd;color:#fff;border-radius:999px;padding:3px 9px}
+.feuille.todo{background:#ffffff1f;border:1.5px dashed #ffffff90;box-shadow:none;padding:30px 16px;text-align:center;color:#ffffffe0;font-size:14px}
+.map{width:100%;border-radius:14px;background-repeat:no-repeat;background-color:#fff}
+.range{width:100%;accent-color:#fff;margin:16px 0 2px}
+.ticks{display:flex;justify-content:space-between;font-size:11.5px;color:#ffffffd0}
+.note{font-size:13.5px;color:#ffffffe6;margin:14px 0 0;border-left:1px solid #ffffffd0;padding-left:12px}
+/* carrousel météo */
+.rail{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;margin:0 -14px;padding:4px 14px 16px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.rail::-webkit-scrollbar{display:none}
+.wcard{flex:0 0 88%;scroll-snap-align:center;height:min(600px,calc(100vh - 290px));min-height:480px;margin:0;display:flex;flex-direction:column;padding:20px 16px 16px}
+.wcard .top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.wcard .cond{text-align:right;font-size:12.5px;color:#ffffffe6}.wcard .cond svg{width:44px;height:44px;display:block;margin-left:auto}
+.panel{flex:1;min-height:0;overflow-y:auto;margin-top:12px;background:#2b1b6b99;border:1px solid #ffffff40;border-radius:20px;backdrop-filter:blur(6px);padding:2px 0 6px;scrollbar-width:thin;scrollbar-color:#ffffff60 transparent}
+.panel table.h{width:calc(100% - 12px);margin:0 6px;border-collapse:collapse;font-size:13px;text-align:center;color:#fff}
+.panel table.h th{position:sticky;top:0;background:#3a1d8ad0;backdrop-filter:blur(8px);color:#ffffffd8;font-weight:600;font-size:11px;padding:6px 2px;line-height:1.15}
+.panel table.h th small{display:block;font-size:10px;opacity:.85;font-weight:600}
+.panel table.h td{padding:3px 2px;border-bottom:1px solid #ffffff22;font-variant-numeric:tabular-nums}
+.panel table.h td:first-child{color:#ffffffd0;text-align:left;padding-left:8px}
+.panel table.h td svg{width:28px;height:28px;display:block;margin:0 auto}
+.mm{display:inline-block;min-width:34px;padding:2px 6px;border-radius:8px;font-weight:800;font-size:12px}
+.t{font-weight:800}
+.dots{display:flex;justify-content:center;align-items:center;gap:7px;margin:0 0 4px}
+.dots button{border:0;padding:0;width:8px;height:8px;border-radius:99px;background:#2b1b6b40;cursor:pointer;transition:all .2s}
+.dots button.on{width:24px;background:linear-gradient(90deg,#ff5a52,#9c3bd0)}
+.dotlab{text-align:center;color:var(--mute);font-size:12.5px;font-weight:700;margin-bottom:8px}
+/* infos (module infos.js) */
+.card{background:linear-gradient(165deg,#4a2bb0,#2b1b6b);color:#fff;border-radius:28px;padding:18px;margin-bottom:14px;box-shadow:0 14px 28px #2b1b6b40}
+.card h2{font-weight:900;font-size:24px;color:#ffd24d}
+.card h3{font-weight:800;font-size:15px;margin:14px 0 6px;color:#fff}
+.card .sub{color:#d6ccff}
+.card .src{color:#d6ccff}
+.ic-list,.key,.plain,.src-list{list-style:none;margin:0;padding:0}
+.ic-list li{display:grid;grid-template-columns:44px 1fr;gap:10px;align-items:center;padding:6px 0;border-bottom:1px solid #ffffff1c}
+.ic-list .ic svg{width:42px;height:42px;display:block}
+.ic-list b{font-weight:800}.ic-list small{display:block;color:#d6ccff;font-size:12.5px;line-height:1.35}
+.key{display:grid;grid-template-columns:1fr 1fr;gap:6px 10px;font-size:13.5px}
+.key li{display:flex;align-items:center;gap:8px}.key i{width:22px;height:14px;border-radius:5px;flex:0 0 auto}
+.plain li{padding:6px 0;border-bottom:1px solid #ffffff1c;font-size:14px}
+.src-list li{padding:7px 0;border-bottom:1px solid #ffffff1c;font-size:13.5px}
+.src-list b{display:block;font-weight:800}.src-list small{display:block;color:#d6ccff;font-size:12px}
+/* barre d'onglets */
+nav{position:fixed;left:0;right:0;bottom:calc(env(safe-area-inset-bottom) + 14px);display:flex;justify-content:center;pointer-events:none}
+nav div{pointer-events:auto;width:min(94%,450px);background:#ffffffd9;backdrop-filter:blur(16px);border:1px solid #fff;border-radius:32px;padding:6px;
+  display:grid;grid-template-columns:repeat(4,1fr);gap:3px;box-shadow:0 14px 30px #6a3bd040}
+nav button{border:0;background:none;color:var(--mute);font:800 11px Nunito;display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 0;border-radius:26px;cursor:pointer}
+nav button svg{width:25px;height:25px}
+nav button.on{color:#fff;background:linear-gradient(135deg,#ff5a52,#9c3bd0)}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid #9c3bd0;outline-offset:2px}
+</style>
+</head>
+<body>
+<div class="app">
+  <header><h1 id="titre"></h1><p class="sub" id="maj"></p></header>
+
+  <main id="p-modeles">
+    <div class="models" id="models"></div>
+    <div class="seg" id="seg-type"><button class="on" data-t="z">Z500 et pression</button><button data-t="p">Précipitations</button></div>
+    <div id="m-hero"></div>
+    <div class="seg" id="seg-vue"><button class="on" data-v="un">Un modèle</button><button data-v="grille">Les 4 en grille</button></div>
+  </main>
+
+  <main id="p-meteo" class="hide">
+    <div class="field"><input id="ville" value="Nanterre" aria-label="Lieu"><button class="btn">Chercher</button></div>
+    <button class="btn ghost" style="width:100%;margin-bottom:10px">📍 Ma position</button>
+    <div class="badges"><span class="runbadge"><i></i>AROME · run 12 UTC du 17/11</span><span class="runbadge"><i></i>ECMWF IFS · run 00 UTC du 17/11</span></div>
+    <div class="rail" id="rail"></div>
+    <div class="dots" id="dots"></div>
+    <div class="dotlab" id="dotlab"></div>
+  </main>
+
+  <main id="p-climat" class="hide">
+    <div class="chips" id="c-top"></div>
+    <div class="chips sm" id="c-sub"></div>
+    <div class="sel hide" id="c-sel"><select id="s-an" aria-label="Année"></select><select id="s-mois" aria-label="Mois"></select></div>
+    <div id="c-hero"></div>
+    <p class="src" style="text-align:center">Graphiques recalculés chaque nuit à minuit · touche une image pour l'agrandir</p>
+  </main>
+
+  <main id="p-infos" class="hide"></main>
+</div>
+
+<nav><div>
+  <button data-p="modeles"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="7" height="7" rx="2"/><rect x="13.5" y="3.5" width="7" height="7" rx="2"/><rect x="3.5" y="13.5" width="7" height="7" rx="2"/><rect x="13.5" y="13.5" width="7" height="7" rx="2"/></svg>Modèles</button>
+  <button data-p="meteo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7 19a4 4 0 1 1 .9-7.9A5.5 5.5 0 0 1 18.5 12 3.5 3.5 0 0 1 18 19z"/><path d="M9.5 5.5l.7-1.6M5.2 7.2L3.8 6M13.5 4.2l.6-1.7"/></svg>Météo</button>
+  <button data-p="climat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l5-5 4 4 8-9"/><path d="M15 7h5v5"/></svg>Climat</button>
+  <button data-p="infos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 7.8v.2"/></svg>Infos</button>
+</div></nav>
+
+<script type="module">
+import {icone, ICONES} from "../modules/icones.js";
+import {rendreInfos} from "../modules/infos.js";
+import {jours, nomJour, dateLongue, tableauHoraire, MOIS, JOURS_L} from "../modules/previsions.js";
+
+const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
+
+/* ---------- décors vifs (SVG) ---------- */
+const flocon = (x, y, r) => `<g transform="translate(${x} ${y})" stroke="#fff" stroke-width="2.4" stroke-linecap="round" opacity=".9">${[0,60,120].map(a =>
+  `<g transform="rotate(${a})"><line x1="${-r}" y1="0" x2="${r}" y2="0"/><line x1="${r*.62}" y1="0" x2="${r*.82}" y2="${-r*.22}"/><line x1="${r*.62}" y1="0" x2="${r*.82}" y2="${r*.22}"/><line x1="${-r*.62}" y1="0" x2="${-r*.82}" y2="${-r*.22}"/><line x1="${-r*.62}" y1="0" x2="${-r*.82}" y2="${r*.22}"/></g>`).join("")}</g>`;
+const DECOS = {
+  chaud: `<svg class="deco" viewBox="0 0 300 300" preserveAspectRatio="xMaxYMin meet"><defs><linearGradient id="gb" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffb0a0"/><stop offset="1" stop-color="#c04bd6"/></linearGradient></defs><g transform="rotate(-38 150 120)" opacity=".85"><rect x="40" y="-30" width="22" height="260" rx="11" fill="url(#gb)"/><rect x="82" y="-10" width="14" height="220" rx="7" fill="url(#gb)" opacity=".8"/><rect x="118" y="-40" width="30" height="280" rx="15" fill="url(#gb)" opacity=".9"/><rect x="170" y="0" width="12" height="200" rx="6" fill="url(#gb)" opacity=".7"/></g></svg>`,
+  soleil: `<svg class="deco" viewBox="0 0 300 300" preserveAspectRatio="xMaxYMin meet"><defs><linearGradient id="gs" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe574"/><stop offset=".6" stop-color="#ff9ab0"/><stop offset="1" stop-color="#e66bd0"/></linearGradient></defs><circle cx="190" cy="108" r="86" fill="url(#gs)" opacity=".95"/></svg>`,
+  froid: `<svg class="deco" viewBox="0 0 300 300" preserveAspectRatio="xMaxYMin meet">${flocon(226, 74, 32)}${flocon(60, 190, 12)}${flocon(262, 160, 9)}</svg>`,
+  nuit: `<svg class="deco" viewBox="0 0 300 300" preserveAspectRatio="xMaxYMin meet"><path transform="translate(190 40) scale(4.6)" d="M16 2a11 11 0 1 0 6 20A9 9 0 0 1 16 2z" fill="#ffe9a8"/><g fill="#fff" opacity=".85"><circle cx="40" cy="140" r="2"/><circle cx="120" cy="90" r="1.6"/><circle cx="260" cy="170" r="2.2"/><circle cx="80" cy="220" r="1.5"/></g></svg>`,
+  mer: `<svg class="deco" viewBox="0 0 300 300" preserveAspectRatio="xMaxYMin meet"><g fill="none" stroke="#fff" opacity=".55"><circle cx="230" cy="90" r="30" stroke-width="2"/><circle cx="230" cy="90" r="52" stroke-width="1.6"/><circle cx="230" cy="90" r="76" stroke-width="1.2"/><circle cx="230" cy="90" r="102" stroke-width=".9"/></g></svg>`
+};
+const hero = (theme, inner, extra = "") => `<div class="hero v-${theme} ${extra}">${DECOS[theme]}${inner}</div>`;
+const feuille = (src, badge = "") => `<div class="feuille" style="position:relative"><a href="${src}" target="_blank"><img src="${src}" alt=""></a>${badge ? `<span class="badge">${badge}</span>` : ""}</div>`;
+
+/* ---------- MODÈLES ---------- */
+const MODELES = [
+  {k:"gfs",nom:"GFS",type:"physique",run:"00 UTC · 17/11",etat:"ok",src:"NOAA / NCEP, domaine public"},
+  {k:"ifs",nom:"ECMWF IFS",type:"physique",run:"00 UTC · 17/11",etat:"ok",src:"ECMWF Open Data, CC BY 4.0"},
+  {k:"aigfs",nom:"AIGFS",type:"IA NOAA",run:"12 UTC · 16/11",etat:"late",src:"NOAA / NCEP, domaine public"},
+  {k:"aifs",nom:"ECMWF AIFS",type:"IA",run:"00 UTC · 17/11",etat:"ok",src:"ECMWF Open Data, CC BY 4.0"}];
+const POS = {gfs:"0% 0%",ifs:"100% 0%",aigfs:"0% 100%",aifs:"100% 100%"};
+let st = {page:"modeles",modele:"gfs",type:"z",vue:"un",h:144,top:"temp",sub:{},an:null,mois:null};
+function dessinerModeles() {
+  const m = MODELES.find(x => x.k === st.modele), z = st.type === "z", grille = st.vue === "grille", img = z ? "../img/modeles_z500.webp" : "../img/modeles_precip.png";
+  $("#models").innerHTML = MODELES.map(x => `<button class="model ${x.k === st.modele && !grille ? "on" : ""}" data-k="${x.k}"><b><i class="${x.etat === "late" ? "late" : ""}"></i>${x.nom}<span class="tag">${x.type}</span></b><small>run ${x.run}${x.etat === "late" ? " · décalé" : ""}</small></button>`).join("");
+  $$(".model").forEach(b => b.onclick = () => { st.modele = b.dataset.k; st.vue = "un"; dessinerModeles(); });
+  $$("#seg-vue button").forEach(b => b.classList.toggle("on", b.dataset.v === st.vue));
+  const d = new Date(Date.UTC(2026, 10, 17, st.h)), n = Math.floor(st.h / 24), ar = z ? 648 / 565 : 612 / 669;
+  $("#m-hero").innerHTML = hero("nuit", `
+    <div class="date">${MOIS[d.getUTCMonth()]}<b>${d.getUTCDate()}</b>${JOURS_L[d.getUTCDay()]} · ${String(d.getUTCHours()).padStart(2, "0")} h UTC</div>
+    <div class="bas"><div><div class="big txt">J+${n}${st.h % 24 ? ` +${st.h % 24} h` : ""}</div>
+      <div class="lieu">${z ? "Z500 et pression" : "Précipitations 6 h et type"} · ${grille ? "4 modèles" : m.nom + " · run " + m.run}</div></div></div>
+    <div class="feuille" style="padding:5px"><div class="map" style="background-image:url(${img});background-size:${grille ? "100% 100%" : "200% 200%"};background-position:${grille ? "0 0" : POS[st.modele]};aspect-ratio:${ar}"></div></div>
+    <input class="range" id="rng" type="range" min="0" max="144" step="6" value="${st.h}" aria-label="Échéance">
+    <div class="ticks"><span>J+0</span><span>J+1</span><span>J+2</span><span>J+3</span><span>J+4</span><span>J+5</span><span>J+6</span></div>
+    <p class="src" style="color:#ffffffc0">${grille ? "Données : NOAA, ECMWF" : "Données : " + m.src} · cartes reconstruites à partir des données brutes</p>`);
+  $("#rng").oninput = e => { st.h = +e.target.value; dessinerModeles(); $("#rng").focus(); };
+}
+$$("#seg-type button").forEach(b => b.onclick = () => { st.type = b.dataset.t; $$("#seg-type button").forEach(x => x.classList.toggle("on", x === b)); dessinerModeles(); });
+$$("#seg-vue button").forEach(b => b.onclick = () => { st.vue = b.dataset.v; dessinerModeles(); });
+
+/* ---------- MÉTÉO : 7 cartes de gauche à droite, J+0 → J+6 ---------- */
+const NEIGE = new Set(["neigef","neige","neigefo","avneige","grains"]);
+const PLUIE = new Set(["bruinef","bruine","bruinefo","pluief","pluie","pluiefo","avf","av","avfo","orage","orageg","bruinev","pluiev","pluievfo","givrant","brouillard"]);
+const SOLEIL = new Set(["ensoleille","peu","eclaircies"]);
+function themeJour(j) {
+  if (NEIGE.has(j.ic) || j.tmax <= 0) return "froid";
+  if (PLUIE.has(j.ic)) return "chaud";
+  if (SOLEIL.has(j.ic)) return "soleil";
+  return "nuit";
+}
+const J = jours();
+function dessinerMeteo() {
+  const ville = ($("#ville").value || "Nanterre").trim();
+  $("#rail").innerHTML = J.map(j => hero(themeJour(j), `
+    <div class="top">
+      <div class="date">${MOIS[j.date.getMonth()]}<b>${j.date.getDate()}</b>${nomJour(j)} · J+${j.d}</div>
+      <div class="cond">${icone(j.ic)}${ICONES[j.ic].nom}</div>
+    </div>
+    <div class="panel">${tableauHoraire(j)}</div>
+    <div class="bas">
+      <div><div class="big">${j.tmax}°C</div><div class="lieu">${ville}, FR</div></div>
+      <div class="petit">${j.tmin}°C<br>${j.mm ? String(j.mm).replace(".", ",") + " mm" : "sec"}<br>rafales ${j.g}</div>
+    </div>`, "wcard")).join("");
+  $("#dots").innerHTML = J.map((j, i) => `<button data-i="${i}" aria-label="J+${i}"></button>`).join("");
+  $$("#dots button").forEach(b => b.onclick = () => $$("#rail .wcard")[+b.dataset.i].scrollIntoView({behavior: "smooth", inline: "center", block: "nearest"}));
+  repere();
+}
+function repere() {
+  const rail = $("#rail"), cartes = $$("#rail .wcard"); if (!cartes.length) return;
+  const centre = rail.scrollLeft + rail.clientWidth / 2;
+  let i = 0, best = 1e9;
+  cartes.forEach((c, k) => { const dst = Math.abs(c.offsetLeft + c.offsetWidth / 2 - centre); if (dst < best) { best = dst; i = k; } });
+  $$("#dots button").forEach((b, k) => b.classList.toggle("on", k === i));
+  $("#dotlab").textContent = `J+${i} · ${nomJour(J[i])} · ${dateLongue(J[i])}`;
+}
+$("#rail").addEventListener("scroll", () => requestAnimationFrame(repere), {passive: true});
+$("#ville").onchange = dessinerMeteo;
+
+/* ---------- CLIMAT ---------- */
+const I = "../img/";
+const CLIMAT = {
+  temp:{nom:"Température",theme:"chaud",sub:{
+    monde:{nom:"Monde",big:"+1,40°",lab:"Monde · moyenne sur 12 mois<br>écart à 1850-1900, juillet 2026",note:"Température mondiale mensuelle depuis 1850, écart à 1850-1900 (gauche) et à 1991-2020 (droite).",img:["temperature_mensuelle.png","temperature_terre_mer.png"]},
+    france:{nom:"France",big:"France",txt:1,lab:"Température moyenne depuis 1958",note:"Météo-France (SIM), comparée à la normale 1991-2020.",img:["france_temperature_mensuelle.png"]}}},
+  cartes:{nom:"Cartes France",cartes:true,theme:"soleil",note:"Écart à la normale 1991-2020, Météo-France (SIM), grille 8 km."},
+  glace:{nom:"Banquise",theme:"froid",sub:{
+    arctique:{nom:"Arctique",big:"Arctique",txt:1,lab:"Étendue de la banquise",note:"En haut : l'année au jour le jour. En bas : l'écart mensuel à 1981-2010 depuis 1978.",img:["banquise_annuelle_arctique.png","banquise_arctique.png"]},
+    antarctique:{nom:"Antarctique",big:"Antarctique",txt:1,lab:"Étendue de la banquise",note:"En haut : l'année au jour le jour. En bas : l'écart mensuel à 1981-2010 depuis 1978.",img:["banquise_annuelle_antarctique.png","banquise_antarctique.png"]},
+    global:{nom:"Global",big:"Global",txt:1,lab:"Étendue de la banquise",note:"Somme des deux pôles.",img:[null]}}},
+  mers:{nom:"Mers",theme:"mer",sub:{
+    monde:{nom:"Global",big:"Océans",txt:1,lab:"Température de surface, monde",note:"Écart mensuel à la normale 1991-2020 depuis 1880.",img:["sst_monde.png"]},
+    nino12:{nom:"Niño 1+2",big:"Niño 1+2",txt:1,lab:"Température de surface",note:"Zone côtière du Pacifique est.",img:["sst_nino12.png"]},
+    nino34:{nom:"Niño 3.4",big:"Niño 3.4",txt:1,lab:"Température de surface",note:"Zone de référence de l'ENSO.",img:["sst_nino34.png"]},
+    med:{nom:"Méditerranée",big:"Méditerranée",txt:1,lab:"Température de surface",note:"Écart mensuel à la normale 1991-2020.",img:["sst_med.png"]}}}
+};
+/* dernier mois disponible = mois précédent (décembre de l'année d'avant si on est en janvier) */
+const NOW = new Date(), DERN = NOW.getMonth() === 0 ? {a: NOW.getFullYear() - 1, m: 12} : {a: NOW.getFullYear(), m: NOW.getMonth()};
+function dessinerClimat() {
+  $("#c-top").innerHTML = Object.entries(CLIMAT).map(([k, o]) => `<button data-k="${k}" class="${k === st.top ? "on" : ""}">${o.nom}</button>`).join("");
+  $$("#c-top button").forEach(b => b.onclick = () => { st.top = b.dataset.k; dessinerClimat(); });
+  const o = CLIMAT[st.top];
+  $("#c-sel").classList.toggle("hide", !o.cartes);
+  if (o.cartes) {
+    $("#c-sub").classList.add("hide");
+    const ans = []; for (let a = DERN.a; a >= 1959; a--) ans.push(a);
+    if (!ans.includes(st.an)) st.an = DERN.a;
+    const max = st.an === DERN.a ? DERN.m : 12; if (!st.mois || st.mois > max) st.mois = max;
+    $("#s-an").innerHTML = ans.map(a => `<option ${a === st.an ? "selected" : ""}>${a}</option>`).join("");
+    $("#s-mois").innerHTML = Array.from({length: max}, (_, i) => `<option value="${i + 1}" ${i + 1 === st.mois ? "selected" : ""}>${MOIS[i]}</option>`).join("");
+    const reel = st.an === 2026 && st.mois === 10;
+    $("#c-hero").innerHTML = hero(o.theme, `
+      <div class="date">${MOIS[st.mois - 1]}<b>${st.an}</b>écart à la normale 1991-2020</div>
+      <div class="bas"><div><div class="big">+0,9°C</div><div class="lieu">France${reel ? "" : " · valeur d'exemple"}</div></div></div>
+      <p class="note">${o.note}</p>` + ["temperature", "precipitations"].map(v => feuille(`${I}france_carte_${v}_2026-10.png`, reel ? "" : "aperçu : octobre 2026")).join(""));
+    return;
+  }
+  const subs = Object.entries(o.sub), c = o.sub[st.sub[st.top]] ? st.sub[st.top] : subs[0][0], s = o.sub[c];
+  $("#c-sub").classList.remove("hide");
+  $("#c-sub").innerHTML = subs.map(([k, x]) => `<button data-k="${k}" class="${k === c ? "on" : ""}">${x.nom}</button>`).join("");
+  $$("#c-sub button").forEach(b => b.onclick = () => { st.sub[st.top] = b.dataset.k; dessinerClimat(); });
+  $("#c-hero").innerHTML = hero(o.theme, `
+    <div class="date">${s.lab.replace(/<br>/g, "<br>")}</div>
+    <div class="bas"><div><div class="big ${s.txt ? "txt" : ""}">${s.big}</div></div></div>
+    <p class="note">${s.note}</p>` + s.img.map(p => p ? feuille(I + p) : `<div class="feuille todo">Graphique à produire :<br>étendue de glace mondiale (Arctique + Antarctique)</div>`).join(""));
+}
+$("#s-an").onchange = e => { st.an = +e.target.value; dessinerClimat(); };
+$("#s-mois").onchange = e => { st.mois = +e.target.value; dessinerClimat(); };
+
+/* ---------- NAVIGATION ---------- */
+const TITRES = {modeles:["Modèles météo","Cartes à J+6 · mises à jour dès que chaque run est publié"],meteo:["Météo","Glisse de gauche à droite : J+0 → J+6"],
+  climat:["Climat","Graphiques mis à jour à minuit"],infos:["Infos","Icônes, couleurs, sources et mises à jour"]};
+function page() {
+  ["modeles","meteo","climat","infos"].forEach(p => $("#p-" + p).classList.toggle("hide", p !== st.page));
+  $$("nav button").forEach(b => b.classList.toggle("on", b.dataset.p === st.page));
+  $("#titre").textContent = TITRES[st.page][0]; $("#maj").textContent = TITRES[st.page][1];
+  if (st.page === "meteo") repere();
+}
+$$("nav button").forEach(b => b.onclick = () => { st.page = b.dataset.p; page(); scrollTo(0, 0); });
+rendreInfos($("#p-infos")); dessinerModeles(); dessinerMeteo(); dessinerClimat(); page();
+</script>
+</body>
+</html>

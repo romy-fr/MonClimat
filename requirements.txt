@@ -1,0 +1,10 @@
+numpy
+xarray
+requests
+matplotlib
+cartopy
+pillow
+cfgrib
+eccodes
+ecmwf-opendata
+scipy

@@ -10,10 +10,10 @@ par pas de 6 h, pour quatre modèles, à partir de DONNÉES OUVERTES :
 
 Grille : GFS en haut à gauche, IFS en haut à droite, AIGFS en bas à gauche, AIFS en bas à droite.
 
-Les échéances sont alignées sur le dernier run de 00 ou 12 UTC : la jauge va de +0 h à +144 h
+Les échéances sont alignées sur le dernier run (00, 06, 12 ou 18 UTC) : la jauge va de +0 h à +144 h
 et, pour une même position, les quatre cartes ont la même date de validité.
-Si ce run n'est pas encore publié pour un modèle, le script prend le précédent
-(12 h plus tôt) avec un décalage de 12 h (mêmes dates de validité).
+Si ce run n'est pas complet pour un modèle, le script prend un précédent
+(6 h, puis 12 h plus tôt) avec le même décalage (mêmes dates de validité).
 
 Usage :
     python build_maps.py            # télécharge les données et produit les cartes
@@ -96,13 +96,19 @@ def utcnow() -> dt.datetime:
     return dt.datetime.now(dt.timezone.utc).replace(tzinfo=None)
 
 
-DELAI_RUN_H = 7                          # un run est visé 7 h après son heure (temps de publication des modèles)
+DELAI_RUN_H = 8                          # un run est visé 8 h après son heure (le plus lent, IFS, met environ 7 h 40)
+DECALAGES_H = (0, 6, 12)                 # run visé, puis les deux précédents
 
 
 def base_run(now: dt.datetime | None = None) -> dt.datetime:
-    """Dernier run de 00 ou 12 UTC assez ancien pour être publié."""
+    """Dernier run (00, 06, 12 ou 18 UTC) assez ancien pour être publié."""
     t = (now or utcnow()) - dt.timedelta(hours=DELAI_RUN_H)
-    return t.replace(hour=12 if t.hour >= 12 else 0, minute=0, second=0, microsecond=0)
+    return t.replace(hour=t.hour - t.hour % 6, minute=0, second=0, microsecond=0)
+
+
+def run_candidats(base: dt.datetime) -> list[tuple[dt.datetime, int]]:
+    """(run, décalage en heures) à essayer dans l'ordre."""
+    return [(base - dt.timedelta(hours=d), d) for d in DECALAGES_H]
 
 
 def log(msg: str) -> None:
@@ -419,9 +425,8 @@ def main() -> int:
     t0 = time.time()
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     ensure_basemap()
-    base = base_run()  # 00 ou 12 UTC
-    # (run, décalage) : dernier run visé, sinon le précédent (12 h plus tôt) décalé de 12 h
-    candidates = [(base, 0), (base - dt.timedelta(hours=12), 12)]
+    base = base_run()  # 00, 06, 12 ou 18 UTC
+    candidates = run_candidats(base)  # run visé, sinon un précédent décalé d'autant
     manifest = {"genere_le": utcnow().isoformat(timespec="minutes") + "Z",
                 "base": base.isoformat() + "Z", "pas_h": PAS_H, "offsets": OFFSETS,
                 "niveau_hpa": LEVEL_HPA, "demo": args.demo, "modeles": {}}
@@ -437,8 +442,8 @@ def main() -> int:
                 try:
                     td = time.time()
                     fields = demo_fields(i, steps, shift) if args.demo else FETCHERS[key](run, steps, tmp)
-                    # Le run visé doit être complet jusqu'à J+6, sinon on tente le précédent.
-                    if shift == 0 and steps[-1] not in fields:
+                    # Un run doit aller jusqu'à J+6, sinon on tente le précédent (le dernier essai est accepté tel quel).
+                    if shift != DECALAGES_H[-1] and steps[-1] not in fields:
                         raise RuntimeError(f"{len(fields)}/{len(steps)} échéances disponibles, J+6 manquante")
                     if not fields:
                         raise RuntimeError("aucune échéance disponible")

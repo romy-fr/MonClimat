@@ -428,7 +428,7 @@ def main() -> int:
     OUT.mkdir(parents=True, exist_ok=True)
     bm.ensure_basemap()
     base = bm.base_run()
-    candidates = [(base, 0), (base - dt.timedelta(hours=12), 12)]
+    candidates = bm.run_candidats(base)
     manifest = {"genere_le": bm.utcnow().isoformat(timespec="minutes") + "Z", "base": base.isoformat() + "Z",
                 "pas_h": bm.PAS_H, "offsets": OFFSETS, "demo": args.demo, "grele": SHOW_HAIL, "modeles": {}}
 
@@ -456,7 +456,7 @@ def main() -> int:
                             continue
                         types.add(P["has_type"])
                         jobs.append((key, P, run, s, OUT / f"{key}_{o:03d}.png"))
-                    if shift == 0 and not any(j[3] == bm.ECHEANCE_MAX_H for j in jobs):
+                    if shift != bm.DECALAGES_H[-1] and not any(j[3] == bm.ECHEANCE_MAX_H + shift for j in jobs):
                         raise RuntimeError(f"{len(jobs)}/{len(OFFSETS)} échéances, J+6 manquante")
                     if not jobs:
                         raise RuntimeError("aucune échéance exploitable")

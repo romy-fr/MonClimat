@@ -2,8 +2,11 @@ name: Météo – cartes J+0 à J+6 (Z500 et précipitations)
 
 on:
   schedule:
-    - cron: "30 8 * * *"     # run 00 UTC : 8h30 UTC = 9h30 à Paris en hiver (10h30 en été)
-    - cron: "30 20 * * *"    # run 12 UTC : 20h30 UTC = 21h30 à Paris en hiver (22h30 en été)
+    # Quatre productions par jour, 8h30 après chaque run (heures de Paris en hiver ; une de plus en été)
+    - cron: "30 8 * * *"     # run 00 UTC : 8h30 UTC = 9h30 à Paris
+    - cron: "30 14 * * *"    # run 06 UTC : 14h30 UTC = 15h30 à Paris
+    - cron: "30 20 * * *"    # run 12 UTC : 20h30 UTC = 21h30 à Paris
+    - cron: "30 2 * * *"     # run 18 UTC : 2h30 UTC = 3h30 à Paris
   workflow_dispatch:          # bouton "Run workflow" pour lancer à la main
 
 permissions:

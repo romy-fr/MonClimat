@@ -427,7 +427,7 @@ def main() -> int:
     t0 = time.time()
     OUT.mkdir(parents=True, exist_ok=True)
     bm.ensure_basemap()
-    base = bm.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
+    base = bm.base_run()
     candidates = [(base, 0), (base - dt.timedelta(hours=12), 12)]
     manifest = {"genere_le": bm.utcnow().isoformat(timespec="minutes") + "Z", "base": base.isoformat() + "Z",
                 "pas_h": bm.PAS_H, "offsets": OFFSETS, "demo": args.demo, "grele": SHOW_HAIL, "modeles": {}}

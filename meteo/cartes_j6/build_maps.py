@@ -10,17 +10,17 @@ par pas de 6 h, pour quatre modèles, à partir de DONNÉES OUVERTES :
 
 Grille : GFS en haut à gauche, IFS en haut à droite, AIGFS en bas à gauche, AIFS en bas à droite.
 
-Les échéances sont alignées sur le run de 00 UTC du jour : la jauge va de +0 h à +144 h
+Les échéances sont alignées sur le dernier run de 00 ou 12 UTC : la jauge va de +0 h à +144 h
 et, pour une même position, les quatre cartes ont la même date de validité.
-Si le run de 00 UTC d'un modèle n'est pas encore publié, le script prend le run de 12 UTC
-de la veille avec un décalage de 12 h (même dates de validité).
+Si ce run n'est pas encore publié pour un modèle, le script prend le précédent
+(12 h plus tôt) avec un décalage de 12 h (mêmes dates de validité).
 
 Usage :
     python build_maps.py            # télécharge les données et produit les cartes
     python build_maps.py --demo     # rendu hors ligne avec des champs simulés (test)
 
 Sorties (dossier OUT_DIR) :
-    <modele>_<HHH>.png   une carte par modèle et par échéance (HHH = heures depuis 00 UTC du jour)
+    <modele>_<HHH>.png   une carte par modèle et par échéance (HHH = heures depuis le run visé)
     <modele>.png         copie de la carte à +144 h (J+6)
     grille.png           les 4 modèles à +144 h, GFS | IFS / AIGFS | AIFS (pour la notification)
     manifest.json        description de tout ce qui a été produit (lu par la page et par l'app)
@@ -94,6 +94,15 @@ MOIS = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août
 
 def utcnow() -> dt.datetime:
     return dt.datetime.now(dt.timezone.utc).replace(tzinfo=None)
+
+
+DELAI_RUN_H = 7                          # un run est visé 7 h après son heure (temps de publication des modèles)
+
+
+def base_run(now: dt.datetime | None = None) -> dt.datetime:
+    """Dernier run de 00 ou 12 UTC assez ancien pour être publié."""
+    t = (now or utcnow()) - dt.timedelta(hours=DELAI_RUN_H)
+    return t.replace(hour=12 if t.hour >= 12 else 0, minute=0, second=0, microsecond=0)
 
 
 def log(msg: str) -> None:
@@ -410,8 +419,8 @@ def main() -> int:
     t0 = time.time()
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     ensure_basemap()
-    base = utcnow().replace(hour=0, minute=0, second=0, microsecond=0)  # 00 UTC du jour
-    # (run, décalage) : run de 00 UTC du jour, sinon run de 12 UTC de la veille décalé de 12 h
+    base = base_run()  # 00 ou 12 UTC
+    # (run, décalage) : dernier run visé, sinon le précédent (12 h plus tôt) décalé de 12 h
     candidates = [(base, 0), (base - dt.timedelta(hours=12), 12)]
     manifest = {"genere_le": utcnow().isoformat(timespec="minutes") + "Z",
                 "base": base.isoformat() + "Z", "pas_h": PAS_H, "offsets": OFFSETS,
@@ -428,7 +437,7 @@ def main() -> int:
                 try:
                     td = time.time()
                     fields = demo_fields(i, steps, shift) if args.demo else FETCHERS[key](run, steps, tmp)
-                    # Le run de 00 UTC doit être complet jusqu'à J+6, sinon on tente le run de la veille.
+                    # Le run visé doit être complet jusqu'à J+6, sinon on tente le précédent.
                     if shift == 0 and steps[-1] not in fields:
                         raise RuntimeError(f"{len(fields)}/{len(steps)} échéances disponibles, J+6 manquante")
                     if not fields:

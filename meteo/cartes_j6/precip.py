@@ -170,9 +170,7 @@ def fetch_noaa(model: str, run: dt.datetime, steps: list[int], tmp: str) -> dict
 # ECMWF IFS / AIFS (ecmwf-opendata) : un fichier par paramètre, toutes échéances
 # --------------------------------------------------------------------------
 def fetch_ecmwf(model: str, run: dt.datetime, steps: list[int], tmp: str) -> dict:
-    from ecmwf.opendata import Client
-
-    client = Client(source="aws", model=model)
+    client = bm.Ecmwf(model)
     params = ["tp", "cp", "ptype", "mucape"] if model == "ifs" else ["tp", "cp", "sf"]
     common = dict(date=run.strftime("%Y%m%d"), time=run.hour, type="fc", stream="oper", levtype="sfc")
     names = {"tp": "tp_tot", "cp": "cp_tot", "sf": "sf_tot", "ptype": "ptype", "mucape": "cape"}

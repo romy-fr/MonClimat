@@ -234,12 +234,34 @@ def fetch_noaa(model: str, run: dt.datetime, steps: list[int], tmp: str) -> dict
 
 
 # --------------------------------------------------------------------------
-# ECMWF IFS et AIFS (paquet officiel ecmwf-opendata, miroir AWS)
+# ECMWF IFS et AIFS (paquet officiel ecmwf-opendata, miroirs officiels)
 # --------------------------------------------------------------------------
-def fetch_ecmwf(model: str, run: dt.datetime, steps: list[int], tmp: str) -> dict[int, Field]:
-    from ecmwf.opendata import Client  # import tardif : inutile en mode démo
+MIROIRS_ECMWF = ("google", "ecmwf", "aws")   # essayés dans cet ordre
 
-    client = Client(source="aws", model=model)
+
+class Ecmwf:
+    """Téléchargement ECMWF : peu d'essais par miroir, puis on passe au suivant
+    (par défaut la bibliothèque réessaie 500 fois, toutes les 2 minutes, quand un serveur est surchargé)."""
+
+    def __init__(self, model: str):
+        self.model = model
+
+    def retrieve(self, **demande) -> None:
+        from ecmwf.opendata import Client  # import tardif : inutile en mode démo
+
+        derniere = None
+        for miroir in MIROIRS_ECMWF:
+            try:
+                Client(source=miroir, model=self.model, maximum_retries=3, retry_after=15).retrieve(**demande)
+                return
+            except Exception as exc:
+                derniere = exc
+                log(f"    {self.model} : miroir {miroir} en échec ({exc.__class__.__name__})")
+        raise derniere
+
+
+def fetch_ecmwf(model: str, run: dt.datetime, steps: list[int], tmp: str) -> dict[int, Field]:
+    client = Ecmwf(model)
     zparam = "gh" if model == "ifs" else "z"   # IFS : hauteur géopotentielle ; AIFS : géopotentiel
     kind = "height" if zparam == "gh" else "geopotential"
     common = dict(date=run.strftime("%Y%m%d"), time=run.hour, type="fc", stream="oper")
